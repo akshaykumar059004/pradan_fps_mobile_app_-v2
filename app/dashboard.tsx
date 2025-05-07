@@ -1,7 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import axios from "axios";
+import Constants from "expo-constants";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Animated,
   FlatList,
   Image,
@@ -14,47 +17,257 @@ import {
   View,
 } from "react-native";
 import PagerView from 'react-native-pager-view';
+import { FormStatus_todayCount, FormStatus_totalCount, useFormStore } from "../storage/useFormStore";
+import { useUserStore } from "../storage/userDataStore";
+
+const url = Constants.expoConfig.extra.API_URL;
+
 const DashboardScreen: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('Today');
   const slideAnim = useState(new Animated.Value(0))[0];
   const [pageIndex, setPageIndex] = useState(0);
+  const {user} = useUserStore();
+  const {setData} = useFormStore();
+
+  const { setStatus_totalCount, resetStatus_totalCount, status_total } = FormStatus_totalCount(); //global Zustand store for total count of forms
+  const {setStatus_todayCount, resetStatus_todayCount, status_today } = FormStatus_todayCount(); //global Zustand store for today's count of forms
   
   const pageTexts = [
     'Dashboard(Pre)',
     'Dashboard(Post)'
   ];
 
-  const dashboardData = [
+  const fetchDashboardData = async (userId: number) => {
+    try {
+      const dashborad_status_count_response_total = await axios.get(`${url}/api/dashboard/getTotalFormsStatusCount/${userId}`);
+      const dashborad_status_count_response_today = await axios.get(`${url}/api/dashboard/getTodayFormsStatusCount/${userId}`);
+
+      setData("id",user?.id);
+     // console.log("Dashboard Status Count:", dashborad_status_count_response_today.data);
+
+     //convert the array of objects to a map for easy access
+      const statusCountMap_total = Object.fromEntries(
+        dashborad_status_count_response_total.data.map(item => [item.status, item.count])
+      );
+
+      const statusCountMap_today = Object.fromEntries(
+        dashborad_status_count_response_today.data.map(item => [item.status, item.count])
+      );
+      
+      //Refer the documentation[1] for the status codes and the corresponding status names
+      setStatus_totalCount({
+        totalCount_pre: statusCountMap_total[1]+statusCountMap_total[2]+statusCountMap_total[3]+statusCountMap_total[4],
+        pendingCount_pre: statusCountMap_total[1]+statusCountMap_total[2],
+        rejectedCount_pre: statusCountMap_total[3],
+        approvedCount_pre: statusCountMap_total[4],
+        totalCount_post: statusCountMap_total[6]+statusCountMap_total[7]+statusCountMap_total[8]+statusCountMap_total[9],
+        pendingCount_post: statusCountMap_total[7]+statusCountMap_total[6],
+        changerequestedCount_post: statusCountMap_total[8],
+        approvedCount_post: statusCountMap_total[9],
+        hasfetched_total: true,
+      });
+
+      setStatus_todayCount({
+        totalCount_pre: statusCountMap_today[1]+statusCountMap_today[2]+statusCountMap_today[3]+statusCountMap_today[4],
+        pendingCount_pre: statusCountMap_today[1]+statusCountMap_today[2],
+        rejectedCount_pre: statusCountMap_today[3],
+        approvedCount_pre: statusCountMap_today[4],
+        totalCount_post: statusCountMap_today[6]+statusCountMap_today[7]+statusCountMap_today[8]+statusCountMap_today[9],
+        pendingCount_post: statusCountMap_today[7]+statusCountMap_today[6],
+        changerequestedCount_post: statusCountMap_today[8],
+        approvedCount_post: statusCountMap_today[9],
+        hasfetched_total: true,
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    }
+  }
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchDashboardData(user?.id);
+    }
+    return () => {
+      resetStatus_todayCount();
+      resetStatus_totalCount();
+    };
+  }, [user?.id]);
+
+  if ((status_total?.totalCount_pre === 0 && !status_total?.hasfetched_total)) {
+    return <ActivityIndicator />;
+  }
+
+  const dashboardDatapre_total = [
     {
       id: '1',
       label: 'Total Submitted',
       icon: 'assignment',
       color: '#4a7744',
-      count: 120,
+      count: status_total.totalCount_pre,
     },
     {
       id: '2',
       label: 'Pending Forms',
       icon: 'hourglass-empty',
       color: '#f4a261',
-      count: 45,
+      count: status_total.pendingCount_pre,
     },
     {
       id: '3',
       label: 'Rejected Forms',
       icon: 'cancel',
       color: '#e63946',
-      count: 15,
+      count: status_total.rejectedCount_pre,
     },
     {
       id: '4',
       label: 'Approved Forms',
       icon: 'check-circle',
       color: '#2a9d8f',
-      count: 60,
+      count: status_total.approvedCount_pre,
     },
   ];
+
+  const dashboardDatapost_total = [
+    {
+      id: '1',
+      label: 'Total Submitted',
+      icon: 'assignment',
+      color: '#4a7744',
+      count: status_total.totalCount_post,
+    },
+    {
+      id: '2',
+      label: 'Pending Forms',
+      icon: 'hourglass-empty',
+      color: '#f4a261',
+      count: status_total.pendingCount_post,
+    },
+    {
+      id: '3',
+      label: 'Rejected Forms',
+      icon: 'cancel',
+      color: '#e63946',
+      count: status_total.changerequestedCount_post,
+    },
+    {
+      id: '4',
+      label: 'Approved Forms',
+      icon: 'check-circle',
+      color: '#2a9d8f',
+      count: status_total.approvedCount_post,
+    },
+  ];
+
+  const dashboardDatapre_today = [
+    {
+      id: '1',
+      label: 'Total Submitted',
+      icon: 'assignment',
+      color: '#4a7744',
+      count: status_today.totalCount_pre,
+    },
+    {
+      id: '2',
+      label: 'Pending Forms',
+      icon: 'hourglass-empty',
+      color: '#f4a261',
+      count: status_today.pendingCount_pre,
+    },
+    {
+      id: '3',
+      label: 'Rejected Forms',
+      icon: 'cancel',
+      color: '#e63946',
+      count: status_today.rejectedCount_pre,
+    },
+    {
+      id: '4',
+      label: 'Approved Forms',
+      icon: 'check-circle',
+      color: '#2a9d8f',
+      count: status_today.approvedCount_pre,
+    },
+  ];
+
+  const dashboardDatapost_today = [
+    {
+      id: '1',
+      label: 'Total Submitted',
+      icon: 'assignment',
+      color: '#4a7744',
+      count: status_today.totalCount_post,
+    },
+    {
+      id: '2',
+      label: 'Pending Forms',
+      icon: 'hourglass-empty',
+      color: '#f4a261',
+      count: status_today.pendingCount_post,
+    },
+    {
+      id: '3',
+      label: 'Rejected Forms',
+      icon: 'cancel',
+      color: '#e63946',
+      count: status_today.changerequestedCount_post,
+    },
+    {
+      id: '4',
+      label: 'Approved Forms',
+      icon: 'check-circle',
+      color: '#2a9d8f',
+      count: status_today.approvedCount_post,
+    },
+  ];
+
+  // const dashboardData = [
+  //   {
+  //     id: '1',
+  //     label: 'Total Submitted',
+  //     icon: 'assignment',
+  //     color: '#4a7744',
+  //     count: 120,
+  //   },
+  //   {
+  //     id: '2',
+  //     label: 'Pending Forms',
+  //     icon: 'hourglass-empty',
+  //     color: '#f4a261',
+  //     count: 45,
+  //   },
+  //   {
+  //     id: '3',
+  //     label: 'Rejected Forms',
+  //     icon: 'cancel',
+  //     color: '#e63946',
+  //     count: 15,
+  //   },
+  //   {
+  //     id: '4',
+  //     label: 'Approved Forms',
+  //     icon: 'check-circle',
+  //     color: '#2a9d8f',
+  //     count: 60,
+  //   },
+  // ];
+
+  const currentData = useMemo(() => {
+    //console.log("Page Index:", pageIndex);
+    // console.log("Active Tab:", activeTab);
+    if (pageIndex === 0) {
+      return activeTab === 'Today'
+        ? dashboardDatapre_today
+        : dashboardDatapre_total;
+    } else {
+      return activeTab === 'Today'
+        ? dashboardDatapost_today
+        : dashboardDatapost_total;
+    }
+  }, [pageIndex, activeTab]);
+
+
    const toggleTab = (tab: string) => {
       setActiveTab(tab);
       Animated.timing(slideAnim, {
@@ -138,9 +351,9 @@ const renderCard2 = ({ item }: any) => {
             style={styles.profileImage}
           />
           <View style={styles.profileText}>
-            <Text style={styles.profileName}>Kaviyarasan G</Text>
-            <Text style={styles.profileDesignation}>Associate</Text>
-            <Text style={styles.profileEmail}>associative@pradan.net</Text>
+            <Text style={styles.profileName}>{user?.name}</Text>
+            <Text style={styles.profileDesignation}>{user?.role}</Text>
+            <Text style={styles.profileEmail}>{user?.username}</Text>
           </View>
         </Pressable>
   
@@ -175,7 +388,7 @@ const renderCard2 = ({ item }: any) => {
          onPageSelected={(e) => setPageIndex(e.nativeEvent.position)}>
         <FlatList
         key='1'
-          data={dashboardData}
+          data={currentData}
           numColumns={2}
           renderItem={renderCard}
           keyExtractor={(item) => item.id}
@@ -184,7 +397,7 @@ const renderCard2 = ({ item }: any) => {
         />
         <FlatList
         key='2'
-          data={dashboardData}
+          data={currentData   }
           numColumns={2}
           renderItem={renderCard2}
           keyExtractor={(item) => item.id}

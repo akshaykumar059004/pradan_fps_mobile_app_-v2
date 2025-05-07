@@ -1,12 +1,17 @@
+import { useUserStore } from "@/storage/userDataStore";
 import { FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import Constants from "expo-constants";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
+const url = Constants.expoConfig.extra.API_URL;
 
 export default function LoginScreen() {
   const [username, setUsername] = useState("");
+  const setUser = useUserStore((state) => state.setUser);
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
@@ -21,19 +26,31 @@ export default function LoginScreen() {
     checkLogin();
   }, []);
 
+  const fetchUserData = async (username) => {
+    
+    const response = await axios.get(`${url}/api/users/getUserData/${username}`);
+    setUser(response.data); 
+    setUser({username:response.data.email});// Save the user data in Zustand store
+    //console.log("User data:", user); // Log the response data
+    
+  };
+
   const handleLogin = async () => {
-    const storedPassword = await AsyncStorage.getItem("password");
-    const defaultPassword = "123"; // default if none is set
-  
-    if (username.trim() === "123" && password.trim() === (storedPassword || defaultPassword)) {
+    const response = await axios.post(`${url}/api/users/authUser`,{username, password});
+    //console.log(response.data); // Log the response data);
+    
+    if (response.data === 1) { 
       try {
-        await AsyncStorage.setItem("user", "loggedIn");
+        fetchUserData(username); 
+        //await AsyncStorage.setItem("user", u); // Save the login state in AsyncStorage
+        await AsyncStorage.setItem("password", password); //WARNING: this is not secure, use JWT
         router.replace("/dashboard");
+        //console.log("User data:", user?.username); 
       } catch (error) {
-        Alert.alert("Error", "Failed to save login state.");
+        Alert.alert("Error", "Failed to save login state."); 
       }
     } else {
-      Alert.alert("Invalid Credentials", "Please enter valid ID and Password");
+      Alert.alert("Invalid Credentials", "Please enter valid ID and Password"); //if incorrect, show an alert
     }
   };
   
