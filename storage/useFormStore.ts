@@ -3,6 +3,7 @@ import { create } from "zustand";
 
 interface FormData {
   id?: string;
+  user_id?:number;
   submittedAt?: string;
   date?: string;
   fundStatus?:"postfund" | "prefund";

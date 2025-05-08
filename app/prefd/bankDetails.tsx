@@ -15,12 +15,12 @@ export default function BankDetails() {
 
   const [form, setForm] = useState(
     data.bankDetails || {
-      accountHolderName: "",
-      accountNumber: "",
-      bankName: "",
-      branch: "",
-      ifscCode: "",
-      farmerAgreed: "",
+      accountHolderName: "developer",
+      accountNumber: "1423949239",
+      bankName: "react bank",
+      branch: "Kunoor",
+      ifscCode: "RB123K02309",
+      farmerAgreed: "Yes",
       formStatus: "",
       fundStatus:"",
       submittedFiles: {

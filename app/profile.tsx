@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useNavigation } from '@react-navigation/native';
 import axios from "axios";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
@@ -13,7 +12,7 @@ const url = Constants.expoConfig.extra.API_URL;
 export default function Profile() {
   const router = useRouter();
   const { user, logout } = useUserStore();
-  const navigation = useNavigation();
+  //const navigation = useNavigation();
   const [showOldPass, setShowOldPass] = useState(false);
   const [showNewPass, setShowNewPass] = useState(false);
   const [showConfirmPass, setShowConfirmPass] = useState(false);

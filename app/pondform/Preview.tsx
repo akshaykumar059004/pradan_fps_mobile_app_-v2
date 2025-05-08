@@ -1,8 +1,12 @@
+import axios from "axios";
+import Constants from "expo-constants";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Alert, Image, ScrollView, StyleSheet, View } from "react-native";
 import { Button, Card, Divider, IconButton, Text } from "react-native-paper";
 import { useFormStore } from "../../storage/useFormStore";
+
+const url = Constants.expoConfig.extra.API_URL;
 
 export default function Preview() {
   const router = useRouter();
@@ -49,7 +53,8 @@ const canEdit = () => {
       setData("fundStatus",fundStatus);
   
       await new Promise((resolve) => setTimeout(resolve, 50));
-  
+      //console.log(data);
+      await axios.post(`${url}/api/formData/postPondformData`, data);
       await submitForm();
       Alert.alert("Success", "Form Successfully Submitted!", [
         { text: "OK", onPress: () => router.push("/dashboard") },
@@ -225,6 +230,7 @@ const canEdit = () => {
         { label: "      Longitude", value: selectedForm.landDevelopment?.longitude },
         { label: "32. Soil Type", value: selectedForm.landDevelopment?.soilTypeCombined },
         { label: "33. Land to benefit (ha)", value: selectedForm.landDevelopment?.landBenefit },
+        { label: "34. Area benefited by proposal (ha)", value: selectedForm.landDevelopment?.proposalArea },
         { label: "36. Date of Inspection", value: selectedForm.landDevelopment?.date},
         { label: "38. Length", value: selectedForm.landDevelopment?.length },
         { label: "39. Breadth", value: selectedForm.landDevelopment?.breadth },

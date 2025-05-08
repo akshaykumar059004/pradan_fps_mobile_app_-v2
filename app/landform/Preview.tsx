@@ -1,10 +1,14 @@
+import axios from "axios";
+import Constants from "expo-constants";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Alert, Image, ScrollView, StyleSheet, View } from "react-native";
 import { Button, Card, Divider, IconButton, Text } from "react-native-paper";
 import { useFormStore } from "../../storage/useFormStore";
 
-export default function Preview() {
+const url = Constants.expoConfig.extra.API_URL;
+
+export default function   Preview() {
   const router = useRouter();
   const { id,fromsubmit,returnsubmit,fromdraft} = useLocalSearchParams<{ id?: string , returnsubmit?: string,fromsubmit?: string, fromdraft?:string;}>();
   const { data, submittedForms,draftForms, setData, submitForm } = useFormStore();
@@ -46,9 +50,12 @@ const canEdit = () => {
       const fundStatus = data.bankDetails?.fundStatus || "Not Filled";
       setData("formType", "LAND");
       setData("formStatus", userStatus);
-      setData("fundStatus",fundStatus);
+       setData("fundStatus",fundStatus);
   
       await new Promise((resolve) => setTimeout(resolve, 50));
+
+      console.log(data);
+      await axios.post(`${url}/api/formData/postLandformData`, data);
   
       await submitForm();
       Alert.alert("Success", "Form Successfully Submitted!", [

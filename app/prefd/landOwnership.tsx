@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
 import { Button, Checkbox, IconButton, RadioButton } from "react-native-paper";
 import { useFormStore } from "../../storage/useFormStore";
@@ -11,28 +11,28 @@ export default function LandOwnership() {
  
   const [form, setForm] = useState(
     data.landOwnership || {
-      landOwnershipType: "",
-      hasWell: "",
-      areaIrrigated: "",
+      landOwnershipType: "Owner Cultivator",
+      hasWell: "Yes",
+      areaIrrigated: "12",
       irrigatedLand: {
-        rainfed: "",
-        tankfed: "",
-        wellIrrigated: "",
+        rainfed: "14",
+        tankfed: "10",
+        wellIrrigated: "12",
       },
-      pattaNumber: "",
-      totalArea: "",
-      taluk:"",
-      firka:"",
-      revenueVillage: "",
-      cropSeason: "",
+      pattaNumber: "12/12",
+      totalArea: "36",
+      taluk:"hehehe",
+      firka:"hehehe",
+      revenueVillage: "hehehe",
+      cropSeason: "Rabi",
       cropSeasonOther: "",
       livestock: {
-        goat:"",
-        sheep:"",
-        milchAnimals:"",
-        draught_animals:"",
-        poultry:"",
-        others:"",
+        goat:"11",
+        sheep:"1",
+        milchAnimals:"1",
+        draught_animals:"1",
+        poultry:"10",
+        others:"0",
       },
       irrigatedLandCombined:"",
       cropSeasonCombined: "",

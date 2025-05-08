@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
 import { Button, Checkbox, IconButton, RadioButton } from "react-native-paper";
 
+import React from "react";
 import { useFormStore } from "../../storage/useFormStore";
 
 export default function BasicDetails() {
@@ -21,33 +22,34 @@ export default function BasicDetails() {
 
   const [form, setForm] = useState(
     data.basicDetails || {
-      name: "",
-      age: "",
-      mobile: "",
-      district: "",
-      hamlet: "",
-      panchayat: "",
-      block: "",
-      idCardType: "",
-      idCardNumber: "",
+      name: "developer",
+      age: "18",
+      mobile: "6369811550",
+      district: "Madurai",
+      hamlet: "Madurai",
+      panchayat: "Kunoor",
+      block: "Kunoor",
+      idCardType: "Aadhar",
+      idCardNumber: "2878255281091",
       othercard:"",
-      gender: "",
-      fatherSpouse: "",
-      householdType: "",
-      adults: "",
-      children: "",
-      occupation: { agriculture: "", business: "", other: "" },
+      finalidCardType: "",
+      gender: "male",
+      fatherSpouse: "developer father",
+      householdType: "Nuclear",
+      adults: "2",
+      children: "10",
+      occupation: { agriculture: "2", business: "0", other: "0" },
       specialCategory: false,
       specialCategoryNumber: "",
-      caste: "",
-      houseOwnership: "",
-      houseType: "",
+      caste: "OBC",
+      houseOwnership: "Owned",
+      houseType: "Pucca",
       drinkingWater: [],
       potability: [],
       domesticWater: [],
-      toiletAvailability: "",
-      toiletCondition: "",
-      education: "",
+      toiletAvailability: "Yes",
+      toiletCondition: "Working",
+      education: "University",
       hhcombined:"",
       occupationCombined:"",
       drinkingWaterCombined:[],
@@ -96,9 +98,16 @@ export default function BasicDetails() {
     });
   };
 
+  const hand =() =>{
+    updateField("specialCategoryNumber",0);
+    if(form.idCardType === "Other"){
+      updateField("idCardType",form.othercard);
+    }
+  }
+
   // in which id the basics updated while from submitted text
   const handleNext = () => {
-
+    updateField("idCardType",form.othercard);
     setData("basicDetails", form);
 
     if (fromPreview && returnTo ){
@@ -265,7 +274,6 @@ export default function BasicDetails() {
   <RadioButton.Item label="Driving License" value="Driving License" />
   <RadioButton.Item label="Other" value="Other" />
 </RadioButton.Group>
-
 {form.idCardType === "Other" && (
   <TextInput
     value={form.othercard}
@@ -286,6 +294,7 @@ export default function BasicDetails() {
     } else if (form.idCardType === "EPIC" || form.idCardType === "Driving License") {
       filteredText = text.replace(/[^a-zA-Z0-9]/g, '');
     } 
+    hand();
     updateField("idCardNumber", filteredText);
   }}
   style={styles.input}

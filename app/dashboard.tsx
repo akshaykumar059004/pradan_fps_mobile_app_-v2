@@ -43,7 +43,7 @@ const DashboardScreen: React.FC = () => {
       const dashborad_status_count_response_total = await axios.get(`${url}/api/dashboard/getTotalFormsStatusCount/${userId}`);
       const dashborad_status_count_response_today = await axios.get(`${url}/api/dashboard/getTodayFormsStatusCount/${userId}`);
 
-      setData("id",user?.id);
+      setData("user_id",user?.id);
      // console.log("Dashboard Status Count:", dashborad_status_count_response_today.data);
 
      //convert the array of objects to a map for easy access

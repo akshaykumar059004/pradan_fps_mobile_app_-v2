@@ -16,22 +16,22 @@ export default function LandDevelopment() {
   const [form, setForm] = useState(
     data.landDevelopment || {
       date:"",
-      sfNumber: "",
+      sfNumber: "12/11",
       soilTypeCombined: [],
-      landBenefit: "",
+      landBenefit: "134",
       inspectionBy: "",
       approvedBy: "",
       dateInspectionText: "",
       dateApprovalText: "",
       workType: [],
-      workTypeText: "",
-      proposalArea: "",
-      otherWorks: "",
-      latitude: "",
-      longitude: "",
-      pradanContribution: "",
-      farmerContribution: "",
-      totalEstimate: "",
+      workTypeText: "Other",
+      proposalArea: "134",
+      otherWorks: "Nil",
+      latitude: "12313.1221",
+      longitude: "143453.12321",
+      pradanContribution: "10000",
+      farmerContribution: "230000",
+      totalEstimate: "330000",
     }
   );
           useEffect(() => {

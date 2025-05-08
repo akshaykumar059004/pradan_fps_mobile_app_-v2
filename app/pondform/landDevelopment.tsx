@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import { Button, Checkbox, IconButton, Text, TextInput } from "react-native-paper";
 import { useFormStore } from "../../storage/useFormStore";
@@ -14,6 +14,7 @@ export default function PondDevelopment() {
       sfNumber: "",
       soilTypeCombined: [],
       landBenefit: "",
+      proposalArea: "",
       inspectionBy: "",
       approvedBy: "",
       dateInspectionText: "",
@@ -171,6 +172,14 @@ export default function PondDevelopment() {
       <TextInput
         value={form.landBenefit}
         onChangeText={(text) => updateField("landBenefit", text)}
+        style={styles.input}
+        keyboardType="numeric"
+        mode="outlined"
+      />
+      <Text style={styles.label}>33. Area benefited by proposal added (ha)</Text>
+      <TextInput
+        value={form.proposalArea}
+        onChangeText={(text) => updateField("proposalArea", text)}
         style={styles.input}
         keyboardType="numeric"
         mode="outlined"
