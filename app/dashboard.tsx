@@ -40,8 +40,12 @@ const DashboardScreen: React.FC = () => {
 
   const fetchDashboardData = async (userId: number) => {
     try {
-      const dashborad_status_count_response_total = await axios.get(`${url}/api/dashboard/getTotalFormsStatusCount/${userId}`);
-      const dashborad_status_count_response_today = await axios.get(`${url}/api/dashboard/getTodayFormsStatusCount/${userId}`);
+      const dashborad_status_count_response_total = await axios.get(`${url}/api/dashboard/getTotalFormsStatusCount`,{params: {
+        user_id: user?.id,
+      }});
+      const dashborad_status_count_response_today = await axios.get(`${url}/api/dashboard/getTodayFormsStatusCount`,{params: {
+        user_id: user?.id,
+      }});
 
       setData("user_id",user?.id);
      // console.log("Dashboard Status Count:", dashborad_status_count_response_today.data);
@@ -284,7 +288,13 @@ const DashboardScreen: React.FC = () => {
         const handleCardPress = () => {
           switch (item.id) {
             case '1':
-              router.push('/prefd/totalSubmit');
+              axios.get(`${url}/api/dashboard/getpreviewformsData`,{params:{"user_id":user?.id}}).then(response => {
+                      const response_total = response.data;// setForms(response.data); // in React, for example
+                      console.log(response_total);
+                      router.push({pathname:'/prefd/totalSubmit', params: { response_total }});
+                    }).catch(error => {
+                      console.error('Error fetching forms:', error);
+                    });
               break;
             case '2':
               router.push('/prefd/pending');

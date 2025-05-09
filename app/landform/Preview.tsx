@@ -54,7 +54,7 @@ const canEdit = () => {
   
       await new Promise((resolve) => setTimeout(resolve, 50));
 
-      console.log(data);
+      //console.log(data);
       await axios.post(`${url}/api/formData/postLandformData`, data);
   
       await submitForm();

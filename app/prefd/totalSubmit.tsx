@@ -1,7 +1,7 @@
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { FontAwesome5, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Picker } from '@react-native-picker/picker';
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -20,6 +20,7 @@ const statusStyles = {
   Pending: { backgroundColor: '#FFF9C4', textColor: '#F9A825' },
   Rejected: { backgroundColor: '#FFCDD2', textColor: '#C62828' },
 };
+const {response_total} = useLocalSearchParams<{ response_total?: any}>();
 
 const TotalSubmit = () => {
   const router = useRouter();
@@ -67,6 +68,7 @@ const TotalSubmit = () => {
   
 
   const handleCardPress = (item) => {
+    
     let previewPath = "";
     if (item.formType === "LAND") previewPath = "/landform/Preview";
     else if (item.formType === "POND") previewPath = "/pondform/Preview";
@@ -117,7 +119,9 @@ const TotalSubmit = () => {
           <Ionicons name="arrow-back" size={24} color="#1B5E20" />
         </TouchableOpacity>
         <Text style={styles.title}>PRE TotalForm Submissions</Text>
-        <TouchableOpacity onPress={() => setShowFilters(!showFilters)} style={styles.icon}>
+        <TouchableOpacity onPress={() =>{ setShowFilters(!showFilters) 
+          console.log(response_total);
+        }} style={styles.icon}>
           <MaterialIcons name="filter-list" size={24} color="#1B5E20" />
         </TouchableOpacity>
       </View>
@@ -216,12 +220,6 @@ const TotalSubmit = () => {
 
               <Text style={styles.label}>Form: <Text style={styles.value}>{item.formType}</Text></Text>
               <Text style={styles.label}>Date: <Text style={styles.value}>{item.basicDetails.date}</Text></Text>
-
-              <View style={styles.actions}>
-                <TouchableOpacity onPress={() => handleDelete(index)} style={styles.deleteButton}>
-                  <Text>Delete</Text>
-                </TouchableOpacity>
-              </View>
             </TouchableOpacity>
           );
         })
