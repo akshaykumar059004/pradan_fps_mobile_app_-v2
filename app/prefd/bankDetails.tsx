@@ -1,4 +1,8 @@
 import { Picker } from "@react-native-picker/picker";
+import axios from "axios";
+import { Buffer } from "buffer";
+import Constants from "expo-constants";
+import * as Crypto from 'expo-crypto';
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system"; // Import FileSystem
 import * as ImagePicker from "expo-image-picker";
@@ -7,11 +11,17 @@ import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Button, IconButton, RadioButton } from "react-native-paper";
 import { useFormStore } from "../../storage/useFormStore";
+import { useUserStore } from "../../storage/userDataStore";
+
+
+
+const url = Constants.expoConfig?.extra.API_URL;
 
 export default function BankDetails() {
   const router = useRouter();
-   const { id, fromPreview,fromsubmit,returnsubmit,fromland,fromplantation,frompond } = useLocalSearchParams<{ id?: string; fromPreview?: string }>();
-    const { data, submittedForms, setData } = useFormStore();
+  const { id, fromPreview,fromsubmit,returnsubmit,fromland,fromplantation,frompond } = useLocalSearchParams<{ id?: string; fromPreview?: string }>();
+  const { data, submittedForms, setData } = useFormStore();
+  const {user} = useUserStore();
 
   const [form, setForm] = useState(
     data.bankDetails || {
@@ -50,6 +60,63 @@ export default function BankDetails() {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
+  const uploadDocument = async (file:any, field:any) => {
+    const ext:string = file.name?.split('.').pop() || (file.type === "image" ? "jpg" : "pdf");
+
+    const mimeMap:{[key: string]: string} = {
+      pdf: "application/pdf",
+      jpg: "image/jpeg",
+      jpeg: "image/jpeg",
+      png: "image/png",
+    };
+
+    const mimeType = mimeMap[ext] || "application/octet-stream";
+
+    const randomBytes = await Crypto.getRandomBytesAsync(16);
+    const secureName = [...randomBytes].map((b) => b.toString(16).padStart(2, '0')).join('') + `.${ext}`;
+    console.log(secureName);
+
+    const uploadURL = await axios.get(`${url}/api/files/getUploadurl`,{params: {
+      fileName: secureName,
+    }});
+    console.log("Upload URL (Frontend):",uploadURL.data);
+    //const formData = new FormData();  
+    // formData.append("file", {
+    //   uri: file.uri,
+    //   name: file.name,
+    //   type: "application/pdf",
+    // });
+    //formData.append("file", file);
+    console.log("Mime Type:",mimeType);
+    const fileData = await FileSystem.readAsStringAsync(file.uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+    const buffer = Buffer.from(fileData, 'base64');
+    console.log("Buffer:", buffer.BYTES_PER_ELEMENT);
+    try {
+      const response = await axios.put(uploadURL.data, buffer, {
+        headers: {
+          'Content-Type': mimeType,
+        }
+      });
+   }
+   catch (error) {
+      console.error("Upload error:", error);
+   }
+   setForm((prev) => ({
+    ...prev,
+    submittedFiles: {
+      ...prev.submittedFiles,
+      [field]: {
+        ...(prev.submittedFiles?.[field] || {}),
+        name: secureName,
+      },
+    },
+  }));
+  
+  //return secureName;
+};
+
   const handleUpload = async (field: string, fileType = "pdf") => {
     try {
       if (field === "farmerPhoto") {
@@ -71,6 +138,10 @@ export default function BankDetails() {
           const localUri = file.uri;
           const localFileName = `${FileSystem.documentDirectory}${file.fileName || `${field}.jpg`}`;
 
+          console.log(file);
+          uploadDocument(file,field);
+          //console.log("Uploaded filename:", uploaded_filename);
+
           // Move the file to the local storage directory
           await FileSystem.copyAsync({
             from: localUri,
@@ -82,7 +153,7 @@ export default function BankDetails() {
             submittedFiles: {
               ...prev.submittedFiles,
               [field]: {
-                name: file.fileName || `${field}.jpg`,
+                ...(prev.submittedFiles?.[field] || {}),
                 uri: localFileName,
               },
             },
@@ -99,6 +170,10 @@ export default function BankDetails() {
           const localUri = file.uri;
           const localFileName = `${FileSystem.documentDirectory}${file.name}`;
 
+          //console.log(file);
+          uploadDocument(file,field);
+
+
           // Move the file to the local storage directory
           await FileSystem.copyAsync({
             from: localUri,
@@ -110,7 +185,7 @@ export default function BankDetails() {
             submittedFiles: {
               ...prev.submittedFiles,
               [field]: {
-                name: file.name,
+                 //pass the generated file name
                 uri: localFileName,
               },
             },
@@ -124,6 +199,7 @@ export default function BankDetails() {
 
   const handlePreview = () => {
     setData("bankDetails", form);
+    
     if(fromland== "true"){
       router.push({pathname:"/landform/Preview",params:{fromland:"true", frompond :"false",fromplantation:"false"}});
     }
