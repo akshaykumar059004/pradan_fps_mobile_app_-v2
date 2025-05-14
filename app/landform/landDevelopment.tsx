@@ -15,23 +15,19 @@ export default function LandDevelopment() {
    const { data, submittedForms, setData } = useFormStore();
   const [form, setForm] = useState(
     data.landDevelopment || {
-      date:"",
-      sfNumber: "12/11",
-      soilTypeCombined: [],
-      landBenefit: "134",
-      inspectionBy: "",
-      approvedBy: "",
-      dateInspectionText: "",
-      dateApprovalText: "",
-      workType: [],
-      workTypeText: "Other",
-      proposalArea: "134",
-      otherWorks: "Nil",
-      latitude: "12313.1221",
-      longitude: "143453.12321",
-      pradanContribution: "10000",
-      farmerContribution: "230000",
-      totalEstimate: "330000",
+      date:"",//cd
+      sfNumber: "",//cd
+      soilTypeCombined: [],//cd
+      landBenefit: "400",//cd
+      workType: [],//cd
+      workTypeText: "",//no
+      proposalArea: "",//cd
+      otherWorks: "0",//cd
+      latitude: "",//cd
+      longitude: "",//cd
+      pradanContribution: "",//cd
+      farmerContribution: "",//cd
+      totalEstimate: "",//cd
     }
   );
           useEffect(() => {
@@ -73,7 +69,12 @@ export default function LandDevelopment() {
       };
     });
   };
-
+const totalestimation =(feild : any,value : any) =>{
+  const farmer = parseInt(feild) || 0;
+  const pradan = parseInt(value) || 0;
+  const totalestimate  = String(farmer + pradan);
+  updateField("totalEstimate",totalestimate);
+}
   const renderCheckboxGroup = (
     
     field: string,
@@ -115,7 +116,7 @@ export default function LandDevelopment() {
           else if(frompond== "true"){
             router.push({pathname:"/prefd/bankDetails",params:{fromland:"false", frompond :"true",fromplantation:"false"}});
           }
-          else{
+          else if (fromplantation == "true"){
             router.push({pathname:"/prefd/bankDetails",params:{fromland:"false", frompond :"false",fromplantation:"true"}});
           }
         }
@@ -157,13 +158,13 @@ export default function LandDevelopment() {
       <Text style={styles.question}>32. Soil Type:</Text>
       {renderCheckboxGroup("soilTypeCombined", ["Red Soil", "Black Cotton", "Sandy Loam", "Laterite"])}
 
-      <Text style={styles.question}>33. Land to benefit (ha):</Text>
+      {/* <Text style={styles.question}>33. Land to benefit (ha):</Text>
       <TextInput
         value={form.landBenefit}
         onChangeText={(text) => updateField("landBenefit", text)}
         style={styles.input}
         keyboardType="numeric"
-      />
+      /> */}
 
       <Text style={styles.question}>36. Date of Inspection:</Text>
            <TextInput
@@ -217,18 +218,21 @@ export default function LandDevelopment() {
       <Text style={styles.question}>42. Farmer Contribution (Rs):</Text>
       <TextInput
         value={form.farmerContribution}
-        onChangeText={(text) => updateField("farmerContribution", text)}
+        onChangeText={(text) => {updateField("farmerContribution", text)
+          totalestimation( text, form.pradanContribution )
+        }}
+        
         style={styles.input}
         keyboardType="numeric"
       />
 
-      <Text style={styles.question}>43. Total Estimate (Rs):</Text>
-      <TextInput
-        value={form.totalEstimate}
-        onChangeText={(text) => updateField("totalEstimate", text)}
-        style={styles.input}
-        keyboardType="numeric"
-      />
+       <Text style={styles.question}>43. Total Estimate (Rs)</Text>
+                  <TextInput
+                  value={form.totalEstimate}
+                    editable={false}
+                    style={styles.input}
+                    mode="outlined"
+                  />
 
       <Button mode="contained" onPress={handleNext} style={styles.button}>
       {fromPreview ? "Preview" : "Next"}

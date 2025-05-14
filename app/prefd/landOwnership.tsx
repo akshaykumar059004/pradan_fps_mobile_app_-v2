@@ -11,35 +11,36 @@ export default function LandOwnership() {
  
   const [form, setForm] = useState(
     data.landOwnership || {
-      landOwnershipType: "Owner Cultivator",
-      hasWell: "Yes",
-      areaIrrigated: "12",
-      irrigatedLand: {
-        rainfed: "14",
-        tankfed: "10",
-        wellIrrigated: "12",
+      landOwnershipType: "",//cd
+      hasWell: "",//cd
+      areaIrrigated: "",//cd
+      irrigatedLand: {//no
+        rainfed: "",//no
+        tankfed: "",//no
+        wellIrrigated: "",//no
       },
-      pattaNumber: "12/12",
-      totalArea: "36",
-      taluk:"hehehe",
-      firka:"hehehe",
-      revenueVillage: "hehehe",
-      cropSeason: "Rabi",
-      cropSeasonOther: "",
-      livestock: {
-        goat:"11",
-        sheep:"1",
-        milchAnimals:"1",
-        draught_animals:"1",
-        poultry:"10",
-        others:"0",
-      },
-      irrigatedLandCombined:"",
-      cropSeasonCombined: "",
-      livestockCombined:"",
+      pattaNumber: "",//cd
+      totalArea: "",//cd
+      taluk:"",
+      firka:"",
+      revenueVillage: "",//cd
+      cropSeason: "",//no
+      cropSeasonOther: "",//no
+      livestock: {//no
+        goat:"",
+        sheep:"",
+        milchAnimals:"",
+        draught_animals:"",
+        poultry:"",
+        others:"",
+      },//no
+      irrigatedLandCombined:"",//cd
+      cropSeasonCombined: "",//cd
+      livestockCombined:"",//cd
     }
   );
       useEffect(() => {
+        calculateTotalArea(data.landOwnership.irrigatedLand.rainfed, data.landOwnership.irrigatedLand.tankfed,data.landOwnership.irrigatedLand.wellIrrigated);
         if (id && fromPreview === "true") {
           // Load the form by ID and update current working data
           const selected = submittedForms.find((form) => form.id === id);
@@ -68,6 +69,14 @@ export default function LandOwnership() {
       },
     }));
   };
+const calculateTotalArea = (rainfed, tankfed, well) => {
+  const r = parseFloat(rainfed) || 0;
+  const t = parseFloat(tankfed) || 0;
+  const w = parseFloat(well) || 0;
+
+  const total = (r + t + w).toFixed(2); // Rounded to 2 decimal places
+  updateField("totalArea", total.toString());
+};
 
   const toggleCheckbox = (field: string, value: string) => {
     setForm((prev) => ({
@@ -105,17 +114,21 @@ export default function LandOwnership() {
   const handleNext = () => {
     console.log(form.livestockCombined+" - "+form.irrigatedLandCombined+" - "+form.cropSeasonCombined);
     setData("landOwnership", form);
-    if (fromPreview && returnTo) {
+    if (fromPreview == "true"&& returnTo) {
      
       router.push({ pathname: returnTo, params: { id,returnsubmit:returnsubmit,fromsubmit:fromsubmit} });
-    } else {
+    } 
+     else if (fromsubmit && returnsubmit){
+      router.push({ pathname: returnTo, params: { id ,returnsubmit:returnsubmit,fromsubmit:fromsubmit} });
+    }
+    else {
       if(fromland == "true"){
         router.push({pathname:"/landform/landDevelopment",params:{fromland:"true", frompond :"false",fromplantation:"false"}});
       }
       else if(frompond== "true"){
         router.push({pathname:"/pondform/landDevelopment",params:{fromland:"false", frompond :"true",fromplantation:"false"}});
       }
-      else{
+      else if(fromplantation == "true"){
         router.push({pathname:"/plantationform/landDevelopment",params:{fromland:"false", frompond :"false",fromplantation:"true"}});
       }
     }
@@ -168,62 +181,56 @@ export default function LandOwnership() {
         </>
       )}
 
-      <Text style={styles.question}>25. Irrigated Lands (ha):</Text>
-      <Text>Rainfed:</Text>
-      <TextInput
-        value={form.irrigatedLand.rainfed}
-        onChangeText={(text) =>{ 
-          updateNestedField("irrigatedLand", "rainfed", text)
-          const rainfed = form.irrigatedLand.rainfed || "0";
-          const irrigatedLandcombined = `${rainfed},${form.irrigatedLand.tankfed},${form.irrigatedLand.wellIrrigated}`;
-          
-          updateField("irrigatedLandCombined", irrigatedLandcombined);
-        }}
-        style={styles.input}
-        keyboardType="numeric"
-      />
-      <Text>Tankfed:</Text>
-      <TextInput
-        value={form.irrigatedLand.tankfed}
-        onChangeText={(text) =>
-          {updateNestedField("irrigatedLand", "tankfed", text)
-            const tank = form.irrigatedLand.tankfed || "0";
-            const irrigatedLandcombined = `${form.irrigatedLand.rainfed},${tank},${form.irrigatedLand.wellIrrigated}`;
-            
-            updateField("irrigatedLandCombined", irrigatedLandcombined);
-
-          }}
-        style={styles.input}
-        keyboardType="numeric"
-      />
-      <Text>Well Irrigated:</Text>
-      <TextInput
-        value={form.irrigatedLand.wellIrrigated}
-        onChangeText={(text) => {updateNestedField("irrigatedLand", "wellIrrigated", text)
-
-          const well = form.irrigatedLand.wellIrrigated || "0";
-          const irrigatedLandcombined = `${form.irrigatedLand.rainfed},${form.irrigatedLand.tankfed},${well}`;
-          
-          updateField("irrigatedLandCombined", irrigatedLandcombined);
-        }}
-        style={styles.input}
-        keyboardType="numeric"
-      />
-
-      <Text style={styles.question}>26. Patta Number:</Text>
+       <Text style={styles.question}>24 1/2. Patta Number:</Text>
       <TextInput
         value={form.pattaNumber}
         onChangeText={(text) => updateField("pattaNumber", text)}
         style={styles.input}
       />
 
-      <Text style={styles.question}>27. Total Area (ha):</Text>
-      <TextInput
-        value={form.totalArea}
-        onChangeText={(text) => updateField("totalArea", text)}
-        style={styles.input}
-        keyboardType="numeric"
-      />
+<Text style={styles.question}>25. Irrigated Lands (ha):</Text>
+<Text>Rainfed:</Text>
+<TextInput
+  value={String(form.irrigatedLand.rainfed)}
+  onChangeText={(text) => {
+    updateNestedField("irrigatedLand", "rainfed", text);
+    calculateTotalArea(text, form.irrigatedLand.tankfed, form.irrigatedLand.wellIrrigated);
+  }}
+  style={styles.input}
+  keyboardType="numeric"
+/>
+
+<Text>Tankfed:</Text>
+<TextInput
+  value={String(form.irrigatedLand.tankfed)}
+  onChangeText={(text) => {
+    updateNestedField("irrigatedLand", "tankfed", text);
+    
+  }}
+  style={styles.input}
+  keyboardType="numeric"
+/>
+
+<Text>Well Irrigated:</Text>
+<TextInput
+  onChangeText={(text) => {
+    updateNestedField("irrigatedLand", "wellIrrigated", text);
+  }}
+   value={String(form.irrigatedLand.wellIrrigated)}
+  style={styles.input}
+  keyboardType="numeric"
+/>
+
+
+    
+
+      <Text style={styles.question}>27. Total Irrigated lands (ha):</Text>
+<TextInput
+  value={form.totalArea}
+  editable={false}
+  style={styles.input}
+  keyboardType="numeric"
+/>
       <Text style={styles.question}>27-28. Taluk:</Text>
       <TextInput
         value={form.taluk}
@@ -249,7 +256,7 @@ export default function LandOwnership() {
   <Checkbox.Item
     key={season}
     label={season}
-    status={form.cropSeason?.includes(season) ? "checked" : "unchecked"}
+    status={form.cropSeasonCombined?.includes(season) ? "checked" : "unchecked"}
     onPress={() => {
       const newSelection = form.cropSeason?.includes(season)
         ? form.cropSeason.filter((s: string) => s !== season)
@@ -278,7 +285,7 @@ export default function LandOwnership() {
 
 <TextInput
   placeholder="Goat"
-  value={form.livestock.goat}
+  value={String(form.livestock.goat)}
   onChangeText={(text) => {updateNestedField("livestock","goat",text)
     
     const goat = form.livestock.goat ||"0";
@@ -292,7 +299,7 @@ export default function LandOwnership() {
 
 <TextInput
   placeholder="Sheep"
-  value={form.livestock.sheep}
+  value={String(form.livestock.sheep)}
   onChangeText={(text) => {updateNestedField("livestock","sheep",text)
     const sheep = form.livestock.sheep ||"0";
     const livestockCombinedField = `${form.livestock.goat},${sheep},${form.livestock.milchAnimals},${form.livestock.draught_animals},${form.livestock.poultry},${form.livestock.others}`;
@@ -305,7 +312,7 @@ export default function LandOwnership() {
 
 <TextInput
   placeholder="Milch animals"
-  value={form.livestock.milchAnimals}
+  value={String(form.livestock.milchAnimals)}
   onChangeText={(text) => {updateNestedField("livestock","milchAnimals",text)
     const milchAnimals = form.livestock.milchAnimals ||"0";
     const livestockCombinedField = `${form.livestock.goat},${form.livestock.sheep},${milchAnimals},${form.livestock.draught_animals},${form.livestock.poultry},${form.livestock.others}`;
@@ -318,7 +325,7 @@ export default function LandOwnership() {
 
 <TextInput
   placeholder="Draught Animals"
-  value={form.livestock.draught_animals}
+  value={String(form.livestock.draught_animals)}
   onChangeText={(text) => {updateNestedField("livestock","draught_animals",text)
     const draught_animals= form.livestock.draught_animals ||"0";
     const livestockCombinedField = `${form.livestock.goat},${form.livestock.sheep},${form.livestock.milchAnimals},${draught_animals},${form.livestock.poultry},${form.livestock.others}`;
@@ -330,7 +337,7 @@ export default function LandOwnership() {
 
 <TextInput
   placeholder="Poultry"
-  value={form.livestock.poultry}
+  value={String(form.livestock.poultry)}
   onChangeText={(text) => {updateNestedField("livestock","poultry",text)
     const poultry= form.livestock.poultry ||"0";
     const livestockCombinedField = `${form.livestock.goat},${form.livestock.sheep},${form.livestock.milchAnimals},${form.livestock.draught_animals},${poultry},${form.livestock.others}`;
@@ -342,7 +349,7 @@ export default function LandOwnership() {
 
 <TextInput
   placeholder="Others"
-  value={form.livestock.others}
+  value={String(form.livestock.others)}
   onChangeText={(text) => {updateNestedField("livestock","others",text)
     const others= form.livestock.others ||"0";
     const livestockCombinedField = `${form.livestock.goat},${form.livestock.sheep},${form.livestock.milchAnimals},${form.livestock.draught_animals},${form.livestock.poultry},${others}`;

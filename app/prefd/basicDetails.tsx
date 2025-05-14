@@ -1,10 +1,9 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
 import { Button, Checkbox, IconButton, RadioButton } from "react-native-paper";
-
-import React from "react";
 import { useFormStore } from "../../storage/useFormStore";
+import { useUserStore } from "../../storage/userDatastore";
 
 export default function BasicDetails() {
   const router = useRouter();
@@ -18,56 +17,59 @@ export default function BasicDetails() {
     frompond?: string;
     fromplantation?: string;
   }>();
-  const { data, submittedForms, setData } = useFormStore();
-
+  const { data, submittedForms, setData,resetData } = useFormStore();
+const {user} = useUserStore();
   const [form, setForm] = useState(
     data.basicDetails || {
-      name: "developer",
-      age: "18",
-      mobile: "6369811550",
-      district: "Madurai",
-      hamlet: "Madurai",
-      panchayat: "Kunoor",
-      block: "Kunoor",
-      idCardType: "Aadhar",
-      idCardNumber: "2878255281091",
-      othercard:"",
-      finalidCardType: "",
-      gender: "male",
-      fatherSpouse: "developer father",
-      householdType: "Nuclear",
-      adults: "2",
-      children: "10",
-      occupation: { agriculture: "2", business: "0", other: "0" },
-      specialCategory: false,
-      specialCategoryNumber: "",
-      caste: "OBC",
-      houseOwnership: "Owned",
-      houseType: "Pucca",
-      drinkingWater: [],
-      potability: [],
-      domesticWater: [],
-      toiletAvailability: "Yes",
-      toiletCondition: "Working",
-      education: "University",
-      hhcombined:"",
-      occupationCombined:"",
-      drinkingWaterCombined:[],
-      potabilityCombined:[],
-      domesticWaterCombined:[],
-    }
+      name: "",//cd
+      age: "",
+      mobile: "",
+      district: "",
+      hamlet: "",
+      panchayat: "",
+      block: "",
+      idCardType: "",//cd
+      idCardNumber: "",//cd
+      othercard:"", //no
+      gender: "",
+      fatherSpouse: "",//cd
+      householdType: "",//cd
+      adults: "",//no
+      children: "",//no
+      occupation: { agriculture: "", business: "", other: "" },//no
+      specialCategory: "",//no
+      specialCategoryNumber: "0",//cd
+      caste: "",
+      houseOwnership: "",//cd
+      houseType: "",//cd
+      drinkingWater: [],//no
+      potability: [],//no
+      domesticWater: [],//no
+      toiletAvailability: "",//cd
+      toiletCondition: "",//cd
+      education: "",//cd
+      hhcombined:"",//cd
+      occupationCombined:"",//cd
+      drinkingWaterCombined:[],//cd
+      potabilityCombined:[],//cd
+      domesticWaterCombined:[],//cd    
+      }
   );
   
   useEffect(() => {
-    if (id && fromPreview === "true" || id && fromsubmit == "true") {// added from submit here
-      const selected = submittedForms.find((form) => form.id === id);
-      if (selected) {
-        Object.entries(selected).forEach(([key, value]) => {
-          setData(key as keyof typeof data, value);
-        });
-      }
+  setData("user_id", user.id);
+  if ((id && fromPreview === "true") || (id && fromsubmit === "true")) {
+    const selected = submittedForms.find((form) => form.id === id);
+    if (selected) {
+      Object.entries(selected).forEach(([key, value]) => {
+        setData(key as keyof typeof data, value);
+      });
     }
-  }, [id]);
+  }
+}, [id]);
+
+
+
   const updateField = (field: string, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -110,8 +112,9 @@ export default function BasicDetails() {
     updateField("idCardType",form.othercard);
     setData("basicDetails", form);
 
-    if (fromPreview && returnTo ){
-      router.push({ pathname: returnTo, params: { id ,returnsubmit:returnsubmit,fromsubmit:fromsubmit} });
+    if (fromPreview == "true" && returnTo ){
+      console.log(returnTo);
+      router.push({ pathname: returnTo, params: { id ,returnsubmit:returnsubmit,fromsubmit:fromsubmit ,fromPreview:fromPreview} });
     } 
     // for  from submit check here
     else if (fromsubmit && returnsubmit){
@@ -125,7 +128,7 @@ export default function BasicDetails() {
         else if(frompond=="true"){
           router.push({pathname:"/prefd/landOwnership",params:{fromland:"false", frompond :"true",fromplantation:"false"}});
         }
-        else{
+        else if(fromplantation == "true"){
           router.push({pathname:"/prefd/landOwnership",params:{fromland:"false", frompond :"false",fromplantation:"true"}});
         }
     }
@@ -163,9 +166,9 @@ export default function BasicDetails() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {!fromPreview && (
+       
     <IconButton icon="arrow-left" size={24} onPress={() => router.back()} />
-  )}
+
 
 <Text style={styles.title}>
   {fromland === "true"
@@ -290,6 +293,7 @@ export default function BasicDetails() {
     let filteredText = text;
 
     if (form.idCardType === "Aadhar") {
+      
       filteredText = text.replace(/[^0-9]/g, '').slice(0, 12);
     } else if (form.idCardType === "EPIC" || form.idCardType === "Driving License") {
       filteredText = text.replace(/[^a-zA-Z0-9]/g, '');
@@ -338,7 +342,7 @@ export default function BasicDetails() {
 <Text style={styles.question}>13. Household Members:</Text>
 
 <TextInput
-  value={form.adults}
+  value={String(form.adults)}
   onChangeText={(text) => {
     // Allow only numbers, less than 50
     let filteredText = text.replace(/[^0-9]/g, '');
@@ -359,7 +363,7 @@ export default function BasicDetails() {
 />
 
 <TextInput
-  value={form.children}
+  value={String(form.children)}
   onChangeText={(text) => {
     let filteredText = text.replace(/[^0-9]/g, '');
     if (parseInt(filteredText) > 50) filteredText = '50';
@@ -370,8 +374,9 @@ export default function BasicDetails() {
     
     // Combine both values and update a single field
     const hhcombined = `${updatedAdults},${updatedChildren}`;
-    updateField("hhcombined", hhcombined); // Save combined value in a single field
+    // Save combined value in a single field
     updateField("children", updatedChildren); // Optionally, keep children separate
+     updateField("hhcombined", hhcombined);
   }}
   style={styles.input}
   placeholder="Children"
@@ -382,7 +387,7 @@ export default function BasicDetails() {
 <Text style={styles.question}>14. Occupation of Household Members (No. of persons):</Text>
 
 <TextInput
-  value={form.occupation.agriculture}
+  value={String(form.occupation.agriculture)}
   onChangeText={(text) => {
     updateNestedField("occupation","agriculture",text);
     const updatedAgriculture = text;
@@ -402,7 +407,7 @@ export default function BasicDetails() {
   keyboardType="numeric"
 />
 <TextInput
-  value={form.occupation.business}
+  value={String(form.occupation.business)}
   onChangeText={(text) => {
     updateNestedField("occupation","business",text);
     const updatedBusiness = text;
@@ -424,7 +429,7 @@ export default function BasicDetails() {
 />
 
 <TextInput
-  value={form.occupation.other}
+  value={String(form.occupation.other)|| "0"}
   onChangeText={(text) => {
     updateNestedField("occupation","other",text);
     const updatedOther = text;

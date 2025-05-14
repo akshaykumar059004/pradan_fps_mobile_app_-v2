@@ -1,24 +1,29 @@
 import axios from "axios";
 import Constants from "expo-constants";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Alert, Image, ScrollView, StyleSheet, View } from "react-native";
 import { Button, Card, Divider, IconButton, Text } from "react-native-paper";
+import { useDraftStore } from "../../storage/DraftStore";
 import { useFormStore } from "../../storage/useFormStore";
-
 const url = Constants.expoConfig.extra.API_URL;
 
-export default function Preview() {
+export default function   Preview() {
   const router = useRouter();
-  const { id,fromsubmit,returnsubmit,fromdraft} = useLocalSearchParams<{ id?: string , returnsubmit?: string,fromsubmit?: string, fromdraft?:string;}>();
-  const { data, submittedForms,draftForms, setData, submitForm } = useFormStore();
-  
+  const { id,fromsubmit,returnsubmit,fromPreview} = useLocalSearchParams<{ id?: string , returnsubmit?: string,fromsubmit?: string, fromPreview?:string;}>();
+  const { data, submittedForms, resetData,setData, submitForm,setNestedData,set2NestedData } = useFormStore();//draftForms,
+  const {drafts,saveDraft} = useDraftStore();
 const isSubmittedPreview = !!id;
+
 const selectedForm = React.useMemo(() => {
-  // if (fromsubmit) {
-  //   return data; // Always use updated data when fromsubmit
-  // }
-  if (isSubmittedPreview && id || draftForms && id) {
+  if (fromsubmit) {
+
+   
+    // console.log(JSON.stringify(data) + "inside");
+    return data; // Always use updated data when fromsubmit
+  }
+  // if (isSubmittedPreview && id || draftForms && id) {
+    if (isSubmittedPreview && id ) {
     return submittedForms.find((form) => String(form.id) === id);
   }
   return data;
@@ -27,7 +32,7 @@ const selectedForm = React.useMemo(() => {
 const canEdit = () => {
   if (!isSubmittedPreview) return true; // it's a draft
   const status = selectedForm?.bankDetails?.formStatus;
-  return status === "Pending" || status === "Rejected";
+  return  status ===1||status === 2|| status === 3;
 };
   // console.log("Selected Form:", selectedForm);
   // console.log(id);
@@ -39,32 +44,76 @@ const canEdit = () => {
     );
   }
 
-
   const [submitting, setSubmitting] = React.useState(false);
+  const generateDraftId = () => {
+  const now = new Date();
+  return `draft-${now.getFullYear()}${(now.getMonth() + 1)
+    .toString()
+    .padStart(2, "0")}${now.getDate().toString().padStart(2, "0")}-${now
+    .getHours()
+    .toString()
+    .padStart(2, "0")}${now.getMinutes().toString().padStart(2, "0")}${now
+    .getSeconds()
+    .toString()
+    .padStart(2, "0")}${now.getMilliseconds().toString().padStart(3, "0")}`;
+};
 
-  const handleSubmit = async () => {
-    if (submitting) return; 
-    try {
-      setSubmitting(true);
-      const userStatus = data.bankDetails?.formStatus || "Not Filled";
-      const fundStatus = data.bankDetails?.fundStatus || "Not Filled";
-      setData("formType", "POND");
-      setData("formStatus", userStatus);
-      setData("fundStatus",fundStatus);
-  
-      await new Promise((resolve) => setTimeout(resolve, 50));
-      //console.log(data);
-      await axios.post(`${url}/api/formData/postPondformData`, data);
-      await submitForm();
-      Alert.alert("Success", "Form Successfully Submitted!", [
-        { text: "OK", onPress: () => router.push("/dashboard") },
-      ]);
-    } catch (error) {
-      Alert.alert("Error", "Failed to submit the form. Please try again.\n" + error);
-    } finally {
-      setSubmitting(false);
-    }
-  };
+useEffect(() => {  
+  if(fromsubmit == "true" && fromPreview != "true"){
+const occupationarray = data.basicDetails.occupationCombined.split(',');
+if(data.basicDetails.specialCategoryNumber >0){
+  setNestedData("basicDetails","specialCategory","Yes");
+}
+    set2NestedData("basicDetails","occupation","agriculture",occupationarray[0]);
+    set2NestedData("basicDetails","occupation","business",occupationarray[1]);
+    set2NestedData("basicDetails","occupation","other",occupationarray[2]);
+// const Householdarray = data.basicDetails.hhcombined.split(',');
+    setNestedData("basicDetails","adults",1);
+    setNestedData("basicDetails","children",1);
+    const Irrigationarray = data.landOwnership.irrigatedLandCombined.split(',');
+    set2NestedData("landOwnership","irrigatedLand","rainfed",Irrigationarray[0]);
+    set2NestedData("landOwnership","irrigatedLand","tankfed",Irrigationarray[1]);
+    set2NestedData("landOwnership","irrigatedLand","wellIrrigated",Irrigationarray[2]);
+    const livestockarray = data.landOwnership.livestockCombined.split(',');
+    set2NestedData("landOwnership","livestock","goat",livestockarray[0]);
+    set2NestedData("landOwnership","livestock","sheep",livestockarray[1]);
+    set2NestedData("landOwnership","livestock","milchAnimals",livestockarray[2]);
+    set2NestedData("landOwnership","livestock","draught_animals",livestockarray[3]);
+    set2NestedData("landOwnership","livestock","poultry",livestockarray[4]);
+    set2NestedData("landOwnership","livestock","others",livestockarray[5]);
+    // setData("basicDetails",data.basicDetails);
+    // setData("bankDetails",data.bankDetails)
+    // setData("landDevelopment",data.landDevelopment);
+    // setData("landOwnership",data.landOwnership);
+  }
+  const draftId = generateDraftId();
+  setData("draft_id", draftId);
+  setData("formType", 2);
+}, []);
+const handleSubmit = async () => {
+  if (submitting) return;
+  try {
+    setSubmitting(true);
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    await axios.post(`${url}/api/formData/postPondformData`, data);
+    Alert.alert("Success", "Form Successfully Submitted!", [
+      {
+        text: "OK",
+        onPress: () => {
+          // Clear all form store data
+          resetData();
+          router.push("/dashboard");
+        },
+      },
+    ]);
+  } catch (error) {
+    Alert.alert("Error", "Failed to submit the form. Please try again.\n" + error);
+  } finally {
+    resetData();
+    setSubmitting(false);
+  }
+};
   
   const renderSection = (title: string, fields: any[], editRoute: string) => (
     <Card style={styles.card}>
@@ -144,13 +193,12 @@ const canEdit = () => {
   );
 
   return (
-    
     <ScrollView contentContainerStyle={styles.container}>
       <IconButton
-  icon="arrow-left"
-  size={24}
-  style={styles.backButton}
-  onPress={() => {
+     icon="arrow-left"
+     size={24}
+     style={styles.backButton}
+     onPress={() => {
     if (fromsubmit) {
       router.push(returnsubmit); // Go back to total submitted page
     } else {
@@ -159,7 +207,6 @@ const canEdit = () => {
   }}
 />
       <Text style={styles.title}>Pond Form</Text>
-
       <View style={styles.farmerPhotoContainer}>
         {selectedForm?.bankDetails?.submittedFiles?.farmerPhoto?.uri ? (
           <Image
@@ -171,26 +218,25 @@ const canEdit = () => {
           <Text style={styles.noPhotoText}>Add a farmer photo</Text>
         )}
       </View>
-
       {renderSection("Basic Details", [
-        
-        {label : "Date",value: selectedForm.landDevelopment?.date},
+         {label : "Date",value: selectedForm.landDevelopment?.date},
         {label : "ID",value: id},
-        { label: "1. Name of Farmer", value: selectedForm.basicDetails?.name },
-        { label: "1-2. Age", value: selectedForm.basicDetails?.age },
-        { label: "2. Mobile Number", value: selectedForm.basicDetails?.mobile },
-        { label: "3. District", value: selectedForm.basicDetails?.district },
-        { label: "4. Block", value: selectedForm.basicDetails?.block },
-        { label: "5. Panchayat", value: selectedForm.basicDetails?.panchayat },
-        { label: "6. Hamlet", value: selectedForm.basicDetails?.hamlet },
-        { label: "6. Identity Card", value: selectedForm.basicDetails?.idCardType },
-        { label: "7. ID Card Number", value: selectedForm.basicDetails?.idCardNumber },
-        { label: "8. Gender", value: selectedForm.basicDetails?.gender },
+        { label: "1. Name of Farmer", value: selectedForm.basicDetails?.name},
+        { label: "1-2. Age", value: selectedForm.basicDetails?.age},
+        { label: "2. Mobile Number", value: selectedForm.basicDetails?.mobile},
+        { label: "3. District", value: selectedForm.basicDetails?.district},
+        { label: "4. Block", value: selectedForm.basicDetails?.block},
+        { label: "5. Panchayat", value: selectedForm.basicDetails?.panchayat},
+        { label: "6. Hamlet", value: selectedForm.basicDetails?.hamlet},
+        { label: "6. Identity Card", value: selectedForm.basicDetails?.idCardType},
+        { label: "7. ID Card Number", value: selectedForm.basicDetails?.idCardNumber},
+        { label: "8. Gender", value: selectedForm.basicDetails?.gender},
         { label: "9. Father / Spouse Name", value: selectedForm.basicDetails?.fatherSpouse },
         { label: "10. Type of Household", value: selectedForm.basicDetails?.householdType },
+        // { label: "11. Household Members - Adults , childern", value: selectedForm.basicDetails?.hhcombined},
         { label: "11. Household Members - Adults", value: selectedForm.basicDetails?.adults },
         { label: "    Household Members - Children", value: selectedForm.basicDetails?.children },
-        { label: "12. Occupation of Household Members", value: selectedForm.basicDetails?.occupation},
+        { label: "12. Occupation of Household Members (Agriculture , Business , Others)", value: selectedForm.basicDetails?.occupation},
         { label: "13. Special Category", value: selectedForm.basicDetails?.specialCategory ? "Yes" : "No" },
         { label: "    Special Category Number", value: selectedForm.basicDetails?.specialCategoryNumber },
         { label: "14. Caste", value: selectedForm.basicDetails?.caste },
@@ -208,21 +254,21 @@ const canEdit = () => {
         { label: "23. Land Ownership", value: selectedForm.landOwnership?.landOwnershipType },
         { label: "24. Well for Irrigation", value: selectedForm.landOwnership?.hasWell },
         { label: "    Area Irrigated (ha)", value: selectedForm.landOwnership?.areaIrrigated },
-        { label: "25. Irrigated Lands (ha)", value: selectedForm.landOwnership?.irrigatedLand },
+        { label: "25. Irrigated Lands (ha) (rainfed , tankfed , wellIrrigated)", value: selectedForm.landOwnership?.irrigatedLand},
         { label: "26. Patta Number", value: selectedForm.landOwnership?.pattaNumber },
         { label: "27. Total Area (ha)", value: selectedForm.landOwnership?.totalArea },
         { label: "27-28. Taluk", value: selectedForm.landOwnership?.taluk },
         { label: "27-28. Firka", value: selectedForm.landOwnership?.firka},
         { label: "28. Revenue Village", value: selectedForm.landOwnership?.revenueVillage },
-        { label: "29. Crop Season", value: selectedForm.landOwnership?.cropSeason },
-        { label: "30. LiveStocks" },
-        { label: " Goat", value: selectedForm.landOwnership?.livestock?.goat || "0" },
-        { label: "    Sheep", value: selectedForm.landOwnership?.livestock?.sheep || "0" },
-        { label: "    Milch Animals :", value: selectedForm.landOwnership?.livestock?.milchAnimals || "0" },
-        { label: "    Draught Animals :", value: selectedForm.landOwnership?.livestock?.draught_animals || "0" },
-        { label: "    Poultry :", value: selectedForm.landOwnership?.livestock?.poultry || "0" },
-        { label: "    Others :", value: selectedForm.landOwnership?.livestock?.others || "0" },
-      ], "/prefd/landOwnership")}
+        { label: "29. Crop Season", value: selectedForm.landOwnership?.cropSeasonCombined },
+        { label: "30. LiveStocks (goat , Sheep , Milch Animals ,  Draught Animals , Poultry , Others)", value: selectedForm.landOwnership?.livestock},
+        // { label: " Goat", value: selectedForm.landOwnership?.livestock?.goat || "0" },
+        // { label: "    Sheep", value: selectedForm.landOwnership?.livestock?.sheep || "0" },
+        // { label: "    Milch Animals :", value: selectedForm.landOwnership?.livestock?.milchAnimals || "0" },
+        // { label: "    Draught Animals :", value: selectedForm.landOwnership?.livestock?.draught_animals || "0" },
+        // { label: "    Poultry :", value: selectedForm.landOwnership?.livestock?.poultry || "0" },
+        // { label: "    Others :", value: selectedForm.landOwnership?.livestock?.others || "0" },
+         ], "/prefd/landOwnership")}
 
       {renderSection("Land Development Details", [
         { label: "31. S.F. No.", value: selectedForm.landDevelopment?.sfNumber },
@@ -243,7 +289,7 @@ const canEdit = () => {
 
       {renderSection("Bank Details", [
         { label: "44. Name of Account Holder", value: selectedForm.bankDetails?.accountHolderName },
-        { label: "45. Account Number", value: selectedForm.bankDetails?.accountNumber },
+        { label: "45. Account Number", value: selectedForm.bankDetails?.accountNumber},
         { label: "46. Name of the Bank", value: selectedForm.bankDetails?.bankName },
         { label: "47. Branch", value: selectedForm.bankDetails?.branch },
         { label: "48. IFSC", value: selectedForm.bankDetails?.ifscCode },
@@ -261,21 +307,19 @@ const canEdit = () => {
                   }))
               : ["No files uploaded"],
         },
-        { label: "Form Status", value: selectedForm.bankDetails?.formStatus },
-        { label: "Fund Status", value: selectedForm.bankDetails?.fundStatus },
       ], "/prefd/bankDetails")}
 
-{!isSubmittedPreview && !fromdraft&& (
+{!isSubmittedPreview && (
   <>
+    
     <Button
       mode="outlined"
       onPress={async () => {
         try {
-          setData("formType", "POND");
-          setData("fundStatus",data.bankDetails?.fundStatus)
-
+          
+          // setData("fundStatus",data.bankDetails?.fundStatus)
           await new Promise((res) => setTimeout(res, 50));
-          useFormStore.getState().saveDraft(data);
+          useDraftStore.getState().saveDraft(data);
           Alert.alert("Saved", "Form saved as draft successfully!");
           router.push("/dashboard");
         } catch (err) {
@@ -283,19 +327,20 @@ const canEdit = () => {
         }
       }}
       style={{ marginTop: 10 }}
-    >
+      >
       Save as Draft
     </Button>
-
+</> 
+ ) 
+} 
     <Button
       mode="contained"
       onPress={handleSubmit}
       style={[styles.submitButton, { marginTop: 10 }]}
-    >
+>
       Submit
     </Button>
-  </>
-)}
+
 
     </ScrollView>
   );

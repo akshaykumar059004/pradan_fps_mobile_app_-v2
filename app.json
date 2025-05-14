@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.kavi2005.pradan"
     },
     "web": {
       "bundler": "metro",
@@ -39,9 +40,12 @@
       "typedRoutes": true
     },
     "extra": {
-      "API_URL": "http://192.168.1.7:5000",
+      "API_URL": "http://3.111.32.109:5000",
       "router": {
         "origin": false
+      },
+      "eas": {
+        "projectId": "f1455621-80d9-4227-8c99-44a9f66e9000"
       }
     }
   }

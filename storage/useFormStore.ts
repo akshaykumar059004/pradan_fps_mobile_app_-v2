@@ -2,39 +2,37 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 
 interface FormData {
+  draft_id : string;
   id?: string;
   user_id?:number;
   submittedAt?: string;
   date?: string;
-  fundStatus?:"postfund" | "prefund";
-  formType?: "LAND" | "POND" | "PLANTATION";
-  formStatus?: "Approved" | "Pending" | "Rejected" |"Review";
   basicDetails?: any;
   landOwnership?: any;
+  user_id?:any;
   landDevelopment?: any;
   bankDetails?: any;
+  formType:any;
 }
 
 interface FormStore {
   data: FormData;
   submittedForms: FormData[];
-  draftForms: FormData[];
   loading: boolean;
 
   setData: (section: keyof FormData, value: any) => void;
   resetData: () => void;
   submitForm: () => Promise<void>;
-  saveDraft: () => Promise<void>;
-  loadDrafts: () => Promise<void>;
   loadSubmittedForms: () => Promise<void>;
   clearSubmittedForms: () => Promise<void>;
-  deleteFormByIndex: (index: number) => Promise<void>;
+   setNestedData: (section: keyof FormData, key: string, value: any) => void;
+  set2NestedData: (section: keyof FormData, key1: string, key2: string, value: any) => void;
 }
 
 export const useFormStore = create<FormStore>((set, get) => ({
+  
   data: {},
   submittedForms: [],
-  draftForms: [],
   loading: false,
 
   setData: (section, value) =>
@@ -44,6 +42,31 @@ export const useFormStore = create<FormStore>((set, get) => ({
         [section]: value,
       },
     })),
+    setNestedData: (section, key, value) =>
+    set((state) => ({
+      data: {
+        ...state.data,
+        [section]: {
+          ...(state.data[section] || {}),
+          [key]: value,
+        },
+      },
+    })),
+
+  set2NestedData: (section, key1, key2, value) =>
+    set((state) => ({
+      data: {
+        ...state.data,
+        [section]: {
+          ...(state.data[section] || {}),
+          [key1]: {
+            ...((state.data[section] || {})[key1] || {}),
+            [key2]: value,
+          },
+        },
+      },
+    })),
+
 
   resetData: () => set({ data: {} }),
 
@@ -62,54 +85,13 @@ export const useFormStore = create<FormStore>((set, get) => ({
         ...currentData,
         id: Date.now().toString(),
         submittedAt: new Date().toISOString(),
-        formStatus: currentData.formStatus ,
-        fundStatus:currentData.fundStatus || "prefund",
+        formStatus: currentData.formStatus,
       };
       updatedForms = [...allForms, formWithMeta];
     }
 
     await AsyncStorage.setItem("submittedForms", JSON.stringify(updatedForms));
     set({ submittedForms: updatedForms, data: {} });
-  },
-
-  saveDraft: async () => {
-    const currentData = get().data;
-    const allDrafts = get().draftForms ?? [];
-
-    if (!currentData || Object.keys(currentData).length === 0) {
-      console.warn("No data to save as draft.");
-      return;
-    }
-
-    let updatedDrafts;
-
-    if (currentData.id) {
-      updatedDrafts = allDrafts.map((form) =>
-        form.id === currentData.id ? { ...form, ...currentData } : form
-      );
-    } else {
-      const draftWithMeta = {
-        ...currentData,
-        id: Date.now().toString(),
-        savedAt: new Date().toISOString(),
-        formStatus: "Draft",
-      };
-      updatedDrafts = [...allDrafts, draftWithMeta];
-    }
-
-    await AsyncStorage.setItem("draftForms", JSON.stringify(updatedDrafts));
-    set({ draftForms: updatedDrafts, data: {} });
-  },
-
-  loadDrafts: async () => {
-    try {
-      const stored = await AsyncStorage.getItem("draftForms");
-      if (stored) {
-        set({ draftForms: JSON.parse(stored) });
-      }
-    } catch (error) {
-      console.error("Failed to load draft forms", error);
-    }
   },
 
   loadSubmittedForms: async () => {
@@ -130,14 +112,8 @@ export const useFormStore = create<FormStore>((set, get) => ({
     await AsyncStorage.removeItem("submittedForms");
     set({ submittedForms: [] });
   },
-
-  deleteFormByIndex: async (index: number) => {
-    const currentForms = get().submittedForms;
-    const updatedForms = currentForms.filter((_, i) => i !== index);
-    await AsyncStorage.setItem("submittedForms", JSON.stringify(updatedForms));
-    set({ submittedForms: updatedForms });
-  },
 }));
+
 
 interface FormStoreStatusCountData{
   pendingCount_pre?: number;
@@ -150,7 +126,6 @@ interface FormStoreStatusCountData{
   totalCount_post?: number;
   hasfetched_total?: boolean;
 }
-
 //structure of the ZuStand store for total count of forms
 interface FormStoreStatus_totalCount {
   status_total: FormStoreStatusCountData;

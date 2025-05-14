@@ -1,107 +1,53 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Alert, FlatList, Text, TouchableOpacity, View } from 'react-native';
 import { Button, IconButton } from 'react-native-paper';
-import { useFormStore } from '../storage/useFormStore'; // adjust path as needed
+import { useDraftStore } from '../storage/DraftStore'; // ✅ import the draft store
+import { useFormStore } from '../storage/useFormStore';
 
 export default function DraftsScreen() {
-  const [drafts, setDrafts] = useState([]);
   const router = useRouter();
-  const { setData, submitForm } = useFormStore();
+  const { setData } = useFormStore();
+  const { drafts, loadDrafts, clearDrafts } = useDraftStore(); // ✅ using Zustand values
 
   useEffect(() => {
-    const fetchDrafts = async () => {
-      const data = await AsyncStorage.getItem('draftForms');
-      setDrafts(data ? JSON.parse(data) : []);
-    };
-    fetchDrafts();
+    loadDrafts(); // ✅ load drafts from AsyncStorage into Zustand
   }, []);
 
-  // YOU CAN SEE ALL DATA HERE BELOW USEEFFECT;
-
-  // useEffect(() => {
-  //   const printAllStorageData = async () => {
-  //     try {
-  //       const submitted = await AsyncStorage.getItem('submittedForms');
-  //       const drafts = await AsyncStorage.getItem('draftForms');
-  
-  //       console.log("=== Submitted Forms ===");
-  //       console.log(submitted ? JSON.parse(submitted) : "No submitted forms");
-  
-  //       console.log("=== Draft Forms ===");
-  //       console.log(drafts ? JSON.parse(drafts) : "No draft forms");
-  //     } catch (err) {
-  //       console.error("Failed to read storage", err);
-  //     }
-  //   };
-  
-  //   printAllStorageData();
-  // }, []);
-  
   const openDraft = (item) => {
-    console.log(item.formType);
-    // Store draft data in the form store
+    setData("user_id",item.user_id);
     setData("basicDetails", item.basicDetails);
     setData("landOwnership", item.landOwnership);
     setData("landDevelopment", item.landDevelopment);
     setData("bankDetails", item.bankDetails);
     setData("id", item.id);
-    setData("formType", item.formType);
-    setData("formStatus", item.formStatus);
-    setData("fundStatus",item.fundStatus)
+    setData("formType",item.formType)
+    // setData("form_type", item.formType);
+    // setData("formStatus", item.formStatus);
+    // setData("fundStatus", item.fundStatus);
+
     const pathMap = {
-      LAND: "/landform/Preview",
-      POND: "/pondform/Preview",
-      PLANTATION: "/plantationform/Preview",
+      1: "/landform/Preview",
+      2: "/pondform/Preview",
+      3: "/plantationform/Preview",
     };
-    
-    const path = pathMap[item.formType]; // default fallback
-    
-    // Now navigate — no need to pass id anymore
+      console.log(item.formType + "  name  ");
     router.push({
-      pathname:path,
-      params:{fromdraft:"true"}
+      
+      pathname: pathMap[item.formType],//
+      params: { fromdraft: "true" },
     });
   };
-  
 
   const uploadAllDrafts = async () => {
     try {
-      const submitted = await AsyncStorage.getItem("submittedForms");
-      const submittedForms = submitted ? JSON.parse(submitted) : [];
-  
-      const newSubmittedForms = drafts.map((draft) => ({
-        ...draft,
-        submittedAt: new Date().toISOString(),
-        formStatus: draft.formStatus === "Draft" ? "Pending" : draft.formStatus,
-      }));
-  
-      const merged = [...submittedForms];
-  
-      for (let draft of newSubmittedForms) {
-        const index = merged.findIndex((f) => f.id === draft.id);
-        if (index > -1) {
-          merged[index] = draft;
-        } else {
-          merged.push(draft);
-        }
-      }
-  
-      await AsyncStorage.setItem("submittedForms", JSON.stringify(merged));
-      await AsyncStorage.removeItem("draftForms");
-  
-      setDrafts([]);
-      useFormStore.setState({ submittedForms: merged, draftForms: [] });
-  
+      await clearDrafts(); // ✅ use the Zustand method to clear drafts
       Alert.alert("Success", "All drafts uploaded to submitted forms");
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Failed to upload drafts");
     }
   };
-  
-  
 
   return (
     <View style={{ flex: 1, padding: 16 }}>
@@ -110,7 +56,7 @@ export default function DraftsScreen() {
 
       <FlatList
         data={drafts}
-        keyExtractor={(item) => item.id}
+        // keyExtractor={(item) => item.draft_id}
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => openDraft(item)}
@@ -124,7 +70,10 @@ export default function DraftsScreen() {
             }}
           >
             <Text style={{ fontSize: 16 }}>
-              {item.basicDetails.name?.trim()}
+              {item.basicDetails?.name?.trim() || "Unnamed Draft"}
+            </Text>
+              <Text style={{ fontSize: 16 }}>
+              {item.basicDetails?.draft_id?.trim() || " id"}
             </Text>
             {item.savedAt && (
               <Text style={{ color: 'gray', fontSize: 12 }}>
@@ -136,12 +85,8 @@ export default function DraftsScreen() {
       />
 
       {drafts.length > 0 && (
-        <Button
-          mode="contained"
-          onPress={uploadAllDrafts}
-          style={{ marginTop: 20 }}
-        >
-          Upload All Drafts
+        <Button mode="contained" onPress={uploadAllDrafts} style={{ marginTop: 20 }}>
+          Clear All Drafts
         </Button>
       )}
     </View>

@@ -15,24 +15,20 @@ export default function LandDevelopment() {
    const { data, submittedForms, setData } = useFormStore();
   const [form, setForm] = useState(
     data.landDevelopment || {
-      date:"",
-      sfNumber: "",
-      soilTypeCombined: [],
-      landBenefit: "",
-      inspectionBy: "",
-      approvedBy: "",
-      dateInspectionText: "",
-      dateApprovalText: "",
-      latitude: "",
-      longitude: "",
-      proposalArea: "",
-      otherWorks: "",
-      pradanContribution: "",
-      farmerContribution: "",
-      totalEstimate: "",
-      workType2: "",
-      workType: "",
-      workTypeText: "",
+      date:"",//cd
+      sfNumber: "",//cd
+      soilTypeCombined: [],//cd
+      landBenefit: "",//cd
+      latitude: "",//cd
+      longitude: "",//cd
+      proposalArea: "",//cd
+      otherWorks: "",//cd
+      pradanContribution: "",//cd
+      farmerContribution: "",//cd
+      totalEstimate: "",//cd
+      workType2: "",//cd
+      workType: "",//no
+      workTypeText: "",//no
     }
   );
   useEffect(() => {
@@ -73,7 +69,12 @@ export default function LandDevelopment() {
       };
     });
   };
-
+  const totalestimation =(feild : any,value : any) =>{
+    const farmer = parseInt(feild) || 0;
+    const pradan = parseInt(value) || 0;
+    const totalestimate  = String(farmer + pradan);
+    updateField("totalEstimate",totalestimate);
+  }
   const renderCheckboxGroup = (
     field: string,
     options: string[],
@@ -111,7 +112,7 @@ export default function LandDevelopment() {
         else if(frompond== "true"){
           router.push({pathname:"/prefd/bankDetails",params:{fromland:"false", frompond :"true",fromplantation:"false"}});
         }
-        else{
+        else if (fromplantation == "true"){
           router.push({pathname:"/prefd/bankDetails",params:{fromland:"false", frompond :"false",fromplantation:"true"}});
         }
       }
@@ -187,18 +188,16 @@ export default function LandDevelopment() {
     onChangeText={(text) => {
       updateField("workTypeText", text);
       if (typeof form.workType === "string") {
-        const updatedWorkType = form.workType
-          .split(",")
-          .map((item) => (item === "Other" ? text : item))
-          .join(",");
+        const updatedWorkType = form.workType.split(",").map((item) => (item === "Other" ? text : item)).join(",");
         updateField("workType2", updatedWorkType);
       }
     }}
     
     style={styles.input}
-    placeholder="Specify other work types"
-  />
+    placeholder="Specify other work types"
+  />
 )}
+
 
       <Text style={styles.question}>39. Area benefited by proposal works (ha)</Text>
       <TextInput
@@ -226,23 +225,24 @@ export default function LandDevelopment() {
         mode="outlined"
       />
 
-      <Text style={styles.question}>42. Farmer Contribution (Rs)</Text>
+      <Text style={styles.question}>42. Farmer Contribution (Rs):</Text>
       <TextInput
         value={form.farmerContribution}
-        onChangeText={(text) => updateField("farmerContribution", text)}
+        onChangeText={(text) => {updateField("farmerContribution", text)
+          totalestimation( text, form.pradanContribution )
+        }}
+        
         style={styles.input}
         keyboardType="numeric"
-        mode="outlined"
       />
 
-      <Text style={styles.question}>43. Total Estimate (Rs)</Text>
-      <TextInput
-        value={form.totalEstimate}
-        onChangeText={(text) => updateField("totalEstimate", text)}
-        style={styles.input}
-        keyboardType="numeric"
-        mode="outlined"
-      />
+       <Text style={styles.question}>43. Total Estimate (Rs)</Text>
+                  <TextInput
+                  value={form.totalEstimate}
+                    editable={false}
+                    style={styles.input}
+                    mode="outlined"
+                  />
 
       <Button mode="contained" onPress={handleNext} style={styles.button}>
       {fromPreview ? "SUBMIT" : "NEXT"}

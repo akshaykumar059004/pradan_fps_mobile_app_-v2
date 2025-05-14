@@ -4,28 +4,34 @@ import { Picker } from '@react-native-picker/picker';
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
-import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { useFormStore } from "../../storage/useFormStore";
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
+import { DashbdStore } from "../../storage/DashbdStore";
+
+
+
 
 const statusStyles = {
-  Approved: { backgroundColor: '#C8E6C9', textColor: '#2E7D32' },
-  Pending: { backgroundColor: '#FFF9C4', textColor: '#F9A825' },
-  Rejected: { backgroundColor: '#FFCDD2', textColor: '#C62828' },
+  9: { backgroundColor: '#C8E6C9', textColor: '#2E7D32' },
 };
 
 const Approved = () => {
-  const router = useRouter();
-  const { submittedForms, loadSubmittedForms, deleteFormByIndex } = useFormStore();
-  const { showActionSheetWithOptions } = useActionSheet();
+    const formTypeMap = {
+  1: "LAND",
+  2: "POND",
+  3: "PLANTATION"
+};
 
+  const router = useRouter();
+  // const { submittedForms, loadSubmittedForms, deleteFormByIndex } = useFormStore();
+  const { showActionSheetWithOptions } = useActionSheet();
+const {dashbdforms,loaddashbdForms} = DashbdStore();
   const [searchText, setSearchText] = useState("");
   const [formType, setFormType] = useState("ALL");
   const [panchayat, setPanchayat] = useState("");
@@ -39,54 +45,46 @@ const Approved = () => {
   const [isEndDatePickerVisible, setEndDatePickerVisible] = useState(false);
 
   useEffect(() => {
-    loadSubmittedForms();
+    loaddashbdForms();
   }, []);
 
-  const filteredForms = submittedForms.filter((item) => {
-    const matchesType = formType === "ALL" || item.formType === formType;
-    const isPostFund = item.fundStatus === "postfund";
-    const isPending = item.formStatus === "Approved";
-    const matchesName = item.basicDetails?.name?.toLowerCase().includes(searchText.toLowerCase());
-    const matchesPanchayat = item.basicDetails?.panchayat?.toLowerCase().includes(panchayat.toLowerCase());
-    const matchesBlock = item.basicDetails?.block?.toLowerCase().includes(block.toLowerCase());
-    const matchesHamlet = item.basicDetails?.hamlet?.toLowerCase().includes(hamlet.toLowerCase());
-    const matchesGender = gender === "ALL" || item.basicDetails?.gender === gender;
+  const filteredForms = dashbdforms.filter((item) => {
+    const matchesType = formType === "ALL" || String(item.form_type) === formType;
+    const matchesStatus = item.status === 9;
+    const matchesName = item.farmer_name?.toLowerCase().includes(searchText.toLowerCase());
+    const matchesPanchayat = item.panchayat?.toLowerCase().includes(panchayat.toLowerCase());
+    const matchesBlock = item.block?.toLowerCase().includes(block.toLowerCase());
+    const matchesHamlet = item.hamlet?.toLowerCase().includes(hamlet.toLowerCase());
+    const matchesGender = gender === "ALL" || item.gender === gender;
 
+    // Date range filtering logic
     const formatDate = (dateString) => {
       const [day, month, year] = dateString.split('/');
-      return new Date(year, month - 1, day);
+      return new Date(year, month - 1, day); // Create a Date object with year, month (0-indexed), and day
     };
-
-    const itemDate = formatDate(item.landDevelopment.date);
+  
+    const itemDate = formatDate(item.created_at); // Convert the item's date to Date object
     const matchesStart = !startDate || itemDate >= new Date(startDate);
     const matchesEnd = !endDate || itemDate <= new Date(endDate);
-
-    return isPostFund && isPending && matchesType && matchesName &&
-      matchesPanchayat && matchesBlock && matchesHamlet && matchesGender &&
-      matchesStart && matchesEnd;
+  
+    return matchesStatus&&matchesType && matchesBlock && matchesHamlet&& matchesName && matchesPanchayat && matchesGender&& matchesStart && matchesEnd;
+      //   
+   
   });
+  
 
   const handleCardPress = (item) => {
+    
     let previewPath = "";
-    if (item.formType === "LAND") previewPath = "./postland";
-    else if (item.formType === "POND") previewPath = "./postpond";
-    else if (item.formType === "PLANTATION") previewPath = "./postplantation";
+   if (item.form_type === 1) previewPath = "/landform/Preview";
+    else if (item.form_type === 2) previewPath = "/pondform/Preview";
+    else if (item.form_type === 3) previewPath = "/plantationform/Preview";
     else return alert("Unknown form type.");
 
     router.push({ pathname: previewPath, params: { id: item.id, fromsubmit: "true", returnsubmit: "/postfd/approved" } });
   };
 
-  const handleDelete = (index) => {
-    Alert.alert("Delete Form", "Are you sure you want to delete this form?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        onPress: () => deleteFormByIndex(index),
-        style: "destructive",
-      },
-    ]);
-  };
-
+  // Function to handle the date selection
   const handleConfirmStartDate = (date) => {
     setStartDate(date);
     setStartDatePickerVisible(false);
@@ -110,16 +108,20 @@ const Approved = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.push("/dashboard")} style={styles.icon}>
           <Ionicons name="arrow-back" size={24} color="#1B5E20" />
         </TouchableOpacity>
         <Text style={styles.title}>Post Approved Forms</Text>
-        <TouchableOpacity onPress={() => setShowFilters(!showFilters)} style={styles.icon}>
+        <TouchableOpacity onPress={() =>{ setShowFilters(!showFilters) 
+        // console.log(JSON.stringify(dashbdforms) +"total submit 111");
+        }} style={styles.icon}>
           <MaterialIcons name="filter-list" size={24} color="#1B5E20" />
         </TouchableOpacity>
       </View>
 
+      {/* Search */}
       <View style={styles.searchContainer}>
         <FontAwesome5 name="search" size={16} color="#1B5E20" style={styles.searchIcon} />
         <TextInput
@@ -131,6 +133,7 @@ const Approved = () => {
         />
       </View>
 
+      {/* Filter Options (Toggleable) */}
       {showFilters && (
         <View style={styles.filtersBox}>
           <TextInput placeholder="Panchayat" value={panchayat} onChangeText={setPanchayat} style={styles.searchInput} />
@@ -138,12 +141,13 @@ const Approved = () => {
           <TextInput placeholder="Hamlet" value={hamlet} onChangeText={setHamlet} style={styles.searchInput} />
 
           <Text style={styles.filterLabel}>Form Type</Text>
-          <Picker selectedValue={formType} onValueChange={setFormType}>
-            <Picker.Item label="ALL" value="ALL" />
-            <Picker.Item label="LAND" value="LAND" />
-            <Picker.Item label="POND" value="POND" />
-            <Picker.Item label="PLANTATION" value="PLANTATION" />
-          </Picker>
+          <Picker selectedValue={formType} onValueChange={(val) => setFormType(val)}>
+  <Picker.Item label="ALL" value="ALL" />
+  <Picker.Item label="LAND" value="1" />
+  <Picker.Item label="POND" value="2" />
+  <Picker.Item label="PLANTATION" value="3" />
+</Picker>
+
 
           <Text style={styles.filterLabel}>Gender</Text>
           <Picker selectedValue={gender} onValueChange={setGender}>
@@ -154,11 +158,18 @@ const Approved = () => {
           </Picker>
 
           <TouchableOpacity onPress={() => setStartDatePickerVisible(true)} style={styles.dateButton}>
-            <Text>{startDate ? `Start Date: ${startDate.toLocaleDateString()}` : "Start Date"}</Text>
+         <Text>{startDate ? `Start Date: ${startDate.toLocaleDateString()}` : "Start Date"}</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setEndDatePickerVisible(true)} style={styles.dateButton}>
             <Text>{endDate ? `End Date: ${endDate.toLocaleDateString()}` : "End Date"}</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> 
+
+          {/* Display the selected date range */}
+          {startDate && endDate && (
+            <Text style={styles.dateRangeText}>
+              Showing data from {startDate.toLocaleDateString()} to {endDate.toLocaleDateString()}
+            </Text>
+          )}
 
           <TouchableOpacity onPress={resetFilters} style={styles.resetButton}>
             <Text>Reset Filters</Text>
@@ -166,6 +177,7 @@ const Approved = () => {
         </View>
       )}
 
+      {/* Date Time Picker Modal for Start Date */}
       <DateTimePickerModal
         isVisible={isStartDatePickerVisible}
         mode="date"
@@ -173,6 +185,7 @@ const Approved = () => {
         onCancel={() => setStartDatePickerVisible(false)}
       />
 
+      {/* Date Time Picker Modal for End Date */}
       <DateTimePickerModal
         isVisible={isEndDatePickerVisible}
         mode="date"
@@ -180,11 +193,12 @@ const Approved = () => {
         onCancel={() => setEndDatePickerVisible(false)}
       />
 
+      {/* No Data */}
       {filteredForms.length === 0 ? (
-        <Text style={styles.noDataText}>No Approved forms found.</Text>
+        <Text style={styles.noDataText}>No Approved forms.</Text>
       ) : (
         filteredForms.map((item, index) => {
-          const statusStyle = statusStyles[item.formStatus] || {
+          const statusStyle = statusStyles[item.status] || {
             backgroundColor: "#E0E0E0",
             textColor: "#424242",
           };
@@ -192,16 +206,17 @@ const Approved = () => {
           return (
             <TouchableOpacity key={index} style={styles.card} onPress={() => handleCardPress(item)}>
               <View style={styles.cardHeader}>
-                <Text style={styles.name}>{item.basicDetails?.name || "N/A"}</Text>
+                <Text style={styles.name}>{item.farmer_name|| "N/A"}</Text>
                 <View style={[styles.statusBadge, { backgroundColor: statusStyle.backgroundColor }]}>
                   <Text style={[styles.statusText, { color: statusStyle.textColor }]}>
-                    {item.formStatus}
+                    {item.status === 9? 'Approved':'Unknown'}
                   </Text>
                 </View>
               </View>
-              <Text style={styles.label}>Form: <Text style={styles.value}>{item.formType}</Text></Text>
-              <Text style={styles.label}>Date: <Text style={styles.value}>{item.landDevelopment.date}</Text></Text>
               
+              
+             <Text style={styles.label}>Form: <Text style={styles.value}>{formTypeMap[item.form_type] }</Text></Text>
+              <Text style={styles.label}>Date: <Text style={styles.value}>{item.created_at}</Text></Text>
             </TouchableOpacity>
           );
         })
@@ -209,11 +224,6 @@ const Approved = () => {
     </ScrollView>
   );
 };
-
-export default Approved;
-
-
-
 const styles = StyleSheet.create({
   container: {
     padding: 16,
@@ -346,5 +356,8 @@ const styles = StyleSheet.create({
   dateRangeText: {
     fontSize: 14,
     color: "#388E3C",
-    marginTop: 8,  },
+    marginTop: 8,
+  },
 });
+
+export default Approved;

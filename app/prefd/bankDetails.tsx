@@ -1,4 +1,3 @@
-import { Picker } from "@react-native-picker/picker";
 import axios from "axios";
 import { Buffer } from "buffer";
 import Constants from "expo-constants";
@@ -8,10 +7,10 @@ import * as FileSystem from "expo-file-system"; // Import FileSystem
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
 import { Button, IconButton, RadioButton } from "react-native-paper";
 import { useFormStore } from "../../storage/useFormStore";
-import { useUserStore } from "../../storage/userDataStore";
+import { useUserStore } from "../../storage/userDatastore";
 
 
 
@@ -19,31 +18,31 @@ const url = Constants.expoConfig?.extra.API_URL;
 
 export default function BankDetails() {
   const router = useRouter();
-  const { id, fromPreview,fromsubmit,returnsubmit,fromland,fromplantation,frompond } = useLocalSearchParams<{ id?: string; fromPreview?: string }>();
+  const { id, fromPreview,returnTo,fromsubmit,returnsubmit,fromland,fromplantation,frompond } = useLocalSearchParams<{ id?: string; fromPreview?: string }>();
   const { data, submittedForms, setData } = useFormStore();
   const {user} = useUserStore();
 
   const [form, setForm] = useState(
     data.bankDetails || {
-      accountHolderName: "developer",
-      accountNumber: "1423949239",
-      bankName: "react bank",
-      branch: "Kunoor",
-      ifscCode: "RB123K02309",
-      farmerAgreed: "Yes",
-      formStatus: "",
-      fundStatus:"",
+      accountHolderName: "",//cd
+      accountNumber: "",//cd
+      bankName: "",//cd
+      branch: "",
+      ifscCode: "",//cd
+      farmerAgreed: "",//cd
+      formStatus:"",
       submittedFiles: {
         patta: null,
-        idCard: null,
+        idCard: null,//cd
         fmb: null,
-        farmerPhoto: null,
-        bankPassbook: null,
-        geoTag: null,
+        farmerPhoto: null,//cd
+        bankPassbook: null,//cd
+        geoTag: null,//cd
       },
     }
   );
      useEffect(() => {
+      // console.log( +" in bankdetails");
         if (id && fromPreview === "true") {
           // Load the form by ID and update current working data
           const selected = submittedForms.find((form) => form.id === id);
@@ -87,7 +86,7 @@ export default function BankDetails() {
     //   type: "application/pdf",
     // });
     //formData.append("file", file);
-    console.log("Mime Type:",mimeType);
+    // console.log("Mime Type:",mimeType);
     const fileData = await FileSystem.readAsStringAsync(file.uri, {
       encoding: FileSystem.EncodingType.Base64,
     });
@@ -199,6 +198,10 @@ export default function BankDetails() {
 
   const handlePreview = () => {
     setData("bankDetails", form);
+     if (fromPreview == "true" && returnTo ){
+      console.log(returnTo);
+      router.push({ pathname: returnTo, params: { id ,returnsubmit:returnsubmit,fromsubmit:fromsubmit} });
+    } 
     
     if(fromland== "true"){
       router.push({pathname:"/landform/Preview",params:{fromland:"true", frompond :"false",fromplantation:"false"}});
@@ -206,7 +209,7 @@ export default function BankDetails() {
     else if(frompond== "true"){
       router.push({pathname:"/pondform/Preview",params:{fromland:"false", frompond :"true",fromplantation:"false"}});
     }
-    else{
+    else if (fromplantation == "true"){
       router.push({pathname:"/plantationform/Preview",params:{fromland:"false", frompond :"false",fromplantation:"true"}});
     }
   };
@@ -240,8 +243,11 @@ export default function BankDetails() {
 
       <Text style={styles.question}>45. Account Number:</Text>
       <TextInput
-        value={form.accountNumber}
-        onChangeText={(text) => updateField("accountNumber", text)}
+       value={String(form.accountNumber)}
+        // value={form.accountNumber}
+        onChangeText={(text) => {updateField("accountNumber", text)
+          
+        }}
         style={styles.input}
         keyboardType="numeric"
       />
@@ -263,7 +269,9 @@ export default function BankDetails() {
       <Text style={styles.question}>48. IFSC:</Text>
       <TextInput
         value={form.ifscCode}
-        onChangeText={(text) => updateField("ifscCode", text)}
+        onChangeText={(text) => {
+         const filteredText = text.replace(/[^0-9]/g, '').slice(0, 11);
+          updateField("ifscCode", filteredText)}}
         style={styles.input}
         autoCapitalize="characters"
       />
@@ -277,56 +285,35 @@ export default function BankDetails() {
         <RadioButton.Item label="No" value="No" />
       </RadioButton.Group>
 
-      <Text style={styles.question}>50. Upload Documents:</Text>
-      {[
-        { label: "Patta", key: "patta", type: "pdf" },
-        { label: "ID Card", key: "idCard", type: "pdf" },
-        { label: "FMB", key: "fmb", type: "pdf" },
-        { label: "Photo of Farmer", key: "farmerPhoto", type: "image" },
-        { label: "Bank Passbook", key: "bankPassbook", type: "pdf" },
-        { label: "Geo Tag", key: "geoTag", type: "image" },
-      ].map((file) => (
-        <React.Fragment key={file.key}>
-          <Button
-            mode="outlined"
-            onPress={() => handleUpload(file.key, file.type)}
-            style={styles.uploadButton}
-          >
-            Upload {file.label}
-          </Button>
-          {form.submittedFiles[file.key]?.name && (
-            <Text style={styles.uploadedFile}>
-              Uploaded: {form.submittedFiles[file.key].name}
-            </Text>
-          )}
-        </React.Fragment>
-      ))}
+    {!fromPreview && (
+  <>
+    <Text style={styles.question}>50. Upload Documents:</Text>
+    {[
+      { label: "Patta", key: "patta", type: "pdf" },
+      { label: "ID Card", key: "idCard", type: "pdf" },
+      { label: "FMB", key: "fmb", type: "pdf" },
+      { label: "Photo of Farmer", key: "farmerPhoto", type: "image" },
+      { label: "Bank Passbook", key: "bankPassbook", type: "pdf" },
+      { label: "Geo Tag", key: "geoTag", type: "image" },
+    ].map((file) => (
+      <React.Fragment key={file.key}>
+        <Button
+          mode="outlined"
+          onPress={() => handleUpload(file.key, file.type)}
+          style={styles.uploadButton}
+        >
+          Upload {file.label}
+        </Button>
+        {form.submittedFiles[file.key]?.name && (
+          <Text style={styles.uploadedFile}>
+            Uploaded: {form.submittedFiles[file.key].name}
+          </Text>
+        )}
+      </React.Fragment>
+    ))}
+  </>
+)}
       
-      <Text style={styles.question}>Form Status:</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={form.formStatus}
-          onValueChange={(itemValue) => updateField("formStatus", itemValue)}
-        >
-          <Picker.Item label="Select status..." value="Not Filled" />
-          <Picker.Item label="Approved" value="Approved" />
-          <Picker.Item label="Pending" value="Pending" />
-          <Picker.Item label="Rejected" value="Rejected" />
-          <Picker.Item label="Review" value="Review" />
-        </Picker>
-      </View>
-      <Text style={styles.question}>FUND Status:</Text>
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={form.formStatus}
-          onValueChange={(itemValue) => updateField("fundStatus", itemValue)}
-        >
-          <Picker.Item label="Select status..." value="Not Filled" />
-          <Picker.Item label="Pre Fund" value="prefund" />
-          <Picker.Item label="Post Fund" value="postfund" />
-        </Picker>
-      </View>
-
       <Button
         mode="contained"
         onPress={handlePreview}
