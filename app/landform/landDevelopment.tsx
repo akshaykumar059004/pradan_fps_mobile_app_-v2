@@ -137,7 +137,7 @@ const totalestimation =(feild : any,value : any) =>{
         <Text style={styles.heading}>Land Development Activity</Text>
 </View>
 
-        <Text style={styles.label}>35. S.F. No. of the land to be developed</Text>
+        <Text style={styles.label}>34. S.F. No. of the land to be developed</Text>
       <TextInput
         value={form.sfNumber}
         placeholder="Enter S.F. Number"
@@ -164,7 +164,7 @@ const totalestimation =(feild : any,value : any) =>{
         />
       </View>
 
-      <Text style={styles.label}>32. Soil Type:</Text>
+      <Text style={styles.label}>36. Soil Type:</Text>
       {renderCheckboxGroup("soilTypeCombined", ["Red Soil", "Black Cotton", "Sandy Loam", "Laterite"])}
 
       {/* <Text style={styles.question}>33. Land to benefit (ha):</Text>
@@ -175,7 +175,7 @@ const totalestimation =(feild : any,value : any) =>{
         keyboardType="numeric"
       /> */}
 
-     <Text style={styles.label}>38. Date of Inspection</Text>
+     <Text style={styles.label}>37. Date of Inspection</Text>
            <TextInput
        value={form.date}
        style={styles.input}
@@ -200,7 +200,7 @@ const totalestimation =(feild : any,value : any) =>{
 )}
 
 
-   <Text style={styles.label}>40. Area benefited by proposed works (ha)</Text>
+   <Text style={styles.label}>39. Area benefited by proposed works (ha)</Text>
       <TextInput
         placeholder="Enter area"
         placeholderTextColor="#888"
@@ -210,7 +210,7 @@ const totalestimation =(feild : any,value : any) =>{
         keyboardType="numeric"
       />
 
-        <Text style={styles.label}>41. Any other works proposed</Text>
+        <Text style={styles.label}>40. Any other works proposed</Text>
       <TextInput
       placeholder="Enter details"
           placeholderTextColor="#888"
@@ -220,7 +220,7 @@ const totalestimation =(feild : any,value : any) =>{
         // placeholder="Mention if any"
       />
 
-     <Text style={styles.label}>42. PRADAN Contribution</Text>
+     <Text style={styles.label}>41. PRADAN Contribution</Text>
       <TextInput
        placeholder="Enter amount"
           placeholderTextColor="#888"
@@ -230,7 +230,7 @@ const totalestimation =(feild : any,value : any) =>{
         keyboardType="numeric"
       />
 
-      <Text style={styles.label}>43. Farmer Contribution</Text>
+      <Text style={styles.label}>42. Farmer Contribution</Text>
       <TextInput
        placeholder="Enter amount"
           placeholderTextColor="#888"
@@ -241,7 +241,7 @@ const totalestimation =(feild : any,value : any) =>{
         style={styles.input}
         keyboardType="numeric"
       />
-       <Text style={styles.label}>44. Total Estimate Amount</Text>
+       <Text style={styles.label}>43. Total Estimate Amount</Text>
                   <TextInput
                   value={form.totalEstimate}
                     editable={false}

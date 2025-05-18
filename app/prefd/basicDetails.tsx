@@ -304,7 +304,7 @@ placeholder="Enter Age" placeholderTextColor="#888"
   />
 )} */}
 
-<Text style={styles.question}>9. Aadhar Card Number:</Text>
+<Text style={styles.question}>8. Aadhar Card Number:</Text>
 <TextInput
   value={form.idCardNumber}
   placeholder="Enter ID No." placeholderTextColor="#888"
@@ -331,7 +331,7 @@ placeholder="Enter Age" placeholderTextColor="#888"
 />
 
 
-<Text style={styles.question}>10. Gender:</Text>
+<Text style={styles.question}>9. Gender:</Text>
 {/* <View  style={styles.radioGroup}> */}
   <RadioButton.Group
   onValueChange={(value) => updateField("gender", value)}
@@ -344,15 +344,15 @@ placeholder="Enter Age" placeholderTextColor="#888"
 {/* </View> */}
 
 
-      <Text style={styles.question}>11. Father / Spouse Name:</Text>
+      <Text style={styles.question}>10. Father / Spouse Name:</Text>
       <TextInput
-        value={form.input}
+        value={form.fatherSpouse}
         onChangeText={(text) => updateField("fatherSpouse", text)}
          placeholder="Enter Name"
         style={styles.input}
       />
 
-<Text style={styles.question}>12. Type of Household:</Text>
+<Text style={styles.question}>11. Type of Household:</Text>
 <RadioButton.Group
   onValueChange={(value) => updateField("householdType", value)}
   value={form.householdType}
@@ -361,7 +361,7 @@ placeholder="Enter Age" placeholderTextColor="#888"
   <RadioButton.Item label="Joint" value="Joint" />
 </RadioButton.Group>
 
-            <Text style={styles.label}>13. Household Members</Text>
+            <Text style={styles.label}>12. Household Members</Text>
 <View style={styles.row}>
   <View style={styles.inputHalfWrapper}>
     <Text style={styles.subLabel}>Adults</Text>
@@ -453,7 +453,7 @@ placeholder="Enter Age" placeholderTextColor="#888"
 /> */}
 
 
-<Text style={styles.question}>14. Occupation of Household Members (No. of persons):</Text>
+<Text style={styles.question}>13. Occupation of Household Members (No. of persons):</Text>
 <View style={styles.irrigationRow}>
   <View style={styles.inputIrrigationWrapper}>
     <Text style={styles.subLabel}>Agriculture</Text>
@@ -475,7 +475,7 @@ placeholder="Enter Age" placeholderTextColor="#888"
     },
   ]}
   placeholderTextColor="#888"
-  placeholder="Agriculture"
+  placeholder="0"
   keyboardType="numeric"
 />
 </View>
@@ -500,7 +500,7 @@ placeholder="Enter Age" placeholderTextColor="#888"
     },
   ]}
   placeholderTextColor="#888"
-  placeholder="Business"
+  placeholder="0"
   keyboardType="numeric"
 />
 </View>
@@ -525,12 +525,12 @@ placeholder="Enter Age" placeholderTextColor="#888"
       borderWidth: 1,
     },
   ]}
-  placeholder="Other"
+  placeholder="0"
   keyboardType="numeric"
 />
 </View>
 </View>
-<Text style={styles.question}>15. Special Category:</Text>
+<Text style={styles.question}>14. Special Category:</Text>
 <Checkbox.Item
   label="Disabled"
   status={form.specialCategory ? "checked" : "unchecked"}
@@ -564,7 +564,7 @@ placeholder="Enter Age" placeholderTextColor="#888"
 )}
 
 
-<Text style={styles.question}>16. Caste:</Text>
+<Text style={styles.question}>15. Caste:</Text>
 <RadioButton.Group
   onValueChange={(value) => updateField("caste", value)}
   value={form.caste}
@@ -576,7 +576,7 @@ placeholder="Enter Age" placeholderTextColor="#888"
 </RadioButton.Group>
 
 
-<Text style={styles.question}>17. House Ownership:</Text>
+<Text style={styles.question}>16. House Ownership:</Text>
 <RadioButton.Group
   onValueChange={(value) => updateField("houseOwnership", value)}
   value={form.houseOwnership}
@@ -585,7 +585,7 @@ placeholder="Enter Age" placeholderTextColor="#888"
   <RadioButton.Item label="Owned" value="Owned" />
 </RadioButton.Group>
 
-<Text style={styles.question}>18. Type of House:</Text>
+<Text style={styles.question}>17. Type of House:</Text>
 <RadioButton.Group
   onValueChange={(value) => updateField("houseType", value)}
   value={form.houseType}
@@ -594,16 +594,16 @@ placeholder="Enter Age" placeholderTextColor="#888"
   <RadioButton.Item label="Kutcha" value="kutcha" />
 </RadioButton.Group>
 
-      <Text style={styles.question}>19. Drinking Water Source:</Text>
+      <Text style={styles.question}>18. Drinking Water Source:</Text>
       {renderCheckboxGroup("drinkingWaterCombined", ["Ponds", "Well & Borewells", "Trucks"])}
 
-      <Text style={styles.question}>20. Potability:</Text>
+      <Text style={styles.question}>19. Potability:</Text>
       {renderCheckboxGroup("potabilityCombined", ["Ponds", "Tanks", "Well & Borewells"])}
 
-      <Text style={styles.question}>21. Domestic Water Source:</Text>
+      <Text style={styles.question}>20. Domestic Water Source:</Text>
       {renderCheckboxGroup("domesticWaterCombined", ["Ponds", "Tanks", "Well & Borewells"])}
 
-      <Text style={styles.question}>22. Toilet Availability:</Text>
+      <Text style={styles.question}>21. Toilet Availability:</Text>
 <RadioButton.Group
   onValueChange={(value) => updateField("toiletAvailability", value)}
   value={form.toiletAvailability}
@@ -612,7 +612,7 @@ placeholder="Enter Age" placeholderTextColor="#888"
   <RadioButton.Item label="No" value="No" />
 </RadioButton.Group>
       
-<Text style={styles.question}>23. Toilet Condition:</Text>
+<Text style={styles.question}>22. Toilet Condition:</Text>
 <RadioButton.Group
   onValueChange={(value) => updateField("toiletCondition", value)}
   value={form.toiletCondition}
@@ -620,7 +620,7 @@ placeholder="Enter Age" placeholderTextColor="#888"
   <RadioButton.Item label="Yes" value="yes" />
   <RadioButton.Item label="No" value="no" />
 </RadioButton.Group>
-      <Text style={styles.question}>24. Education of Householder:</Text>
+      <Text style={styles.question}>23. Education of Householder:</Text>
 <RadioButton.Group
   onValueChange={(value) => updateField("education", value)}
   value={form.education}

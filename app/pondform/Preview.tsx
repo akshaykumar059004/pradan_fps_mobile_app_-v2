@@ -1,3 +1,4 @@
+import { useUserStore } from '@/storage/userDatastore';
 import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 import Constants from "expo-constants";
@@ -15,6 +16,7 @@ export default function   Preview() {
   const { id,fromsubmit,returnsubmit,fromPreview} = useLocalSearchParams<{ id?: string , returnsubmit?: string,fromsubmit?: string, fromPreview?:string;}>();
   const { data, submittedForms, resetData,setData, submitForm,setNestedData,set2NestedData } = useFormStore();//draftForms,
   const {drafts,saveDraft} = useDraftStore();
+  const {user} = useUserStore();
 const isSubmittedPreview = !!id;
 
 const selectedForm = React.useMemo(() => {
@@ -60,6 +62,7 @@ const canEdit = () => {
 };
 
 useEffect(() => {  
+  setData("user_id",user.id);
   if(fromsubmit == "true" && fromPreview != "true"){
 const occupationarray = data.basicDetails.occupationCombined.split(',');
 if(data.basicDetails.specialCategoryNumber >0){
@@ -279,7 +282,7 @@ const handleSubmit = async () => {
         { label: "4. Block", value: selectedForm.basicDetails?.block},
         { label: "5. Panchayat", value: selectedForm.basicDetails?.panchayat},
         { label: "6. Hamlet", value: selectedForm.basicDetails?.hamlet},
-        { label: "6. Identity Card", value: selectedForm.basicDetails?.idCardType},
+        // { label: "6. Identity Card", value: selectedForm.basicDetails?.idCardType},
         { label: "7. ID Card Number", value: selectedForm.basicDetails?.idCardNumber},
         { label: "8. Gender", value: selectedForm.basicDetails?.gender},
         { label: "9. Father / Spouse Name", value: selectedForm.basicDetails?.fatherSpouse },

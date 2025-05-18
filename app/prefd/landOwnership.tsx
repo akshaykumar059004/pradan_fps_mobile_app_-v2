@@ -161,7 +161,7 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
       <IconButton icon="arrow-left" size={width * .06} onPress={() => router.back()} />
       <Text style={styles.heading}>Land Ownership & Livestock</Text>
 </View>
-      <Text style={styles.question}>23. Land Ownership:</Text>
+      <Text style={styles.question}>24. Land Ownership:</Text>
 <RadioButton.Group
   onValueChange={(value) => updateField("landOwnershipType", value)}
   value={form.landOwnershipType}
@@ -171,7 +171,7 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
 </RadioButton.Group>
 
 
-<Text style={styles.question}>24. Well for Irrigation:</Text>
+<Text style={styles.question}>25. Well for Irrigation:</Text>
 <RadioButton.Group
   onValueChange={(value) => updateField("hasWell", value)}
   value={form.hasWell}
@@ -183,7 +183,7 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
 
       {form.hasWell === "Yes" && (
         <>
-          <Text style={styles.question}>Area Irrigated (ha):</Text>
+          <Text style={styles.question}>No of Wells:</Text>
           <TextInput
             value={form.areaIrrigated}
             onChangeText={(text) => updateField("areaIrrigated", text)}
@@ -193,7 +193,7 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
         </>
       )}
 
-       <Text style={styles.label}>24. Patta Number</Text>
+       <Text style={styles.label}>26. Patta Number</Text>
       <TextInput
         placeholder="Enter patta number"
         placeholderTextColor="#888"
@@ -231,6 +231,7 @@ placeholder="0"
     updateNestedField("irrigatedLand", "tankfed", text);
      calculateTotalArea( form.irrigatedLand.rainfed, text,form.irrigatedLand.wellIrrigated);
          const Irrigatedcombined = `${form.irrigatedLand.rainfed},${form.irrigatedLand.tankfed},${form.irrigatedLand.wellIrrigated}`
+         updateField("irrigatedLandCombined",Irrigatedcombined);
   }}
   style={styles.input}
   keyboardType="numeric"
@@ -255,16 +256,16 @@ placeholderTextColor="#888"
 </View>
 
     
- <Text style={styles.label}>29. Total Area (ha)</Text>
+ <Text style={styles.label}>28. Total Area (ha)</Text>
 <TextInput
   value={form.totalArea}
   editable={false}
-   placeholder="Enter total area"
+   placeholder="0"
   placeholderTextColor="#888"
   style={styles.input}
   keyboardType="numeric"
 />
-     <Text style={styles.label}>30. Taluk</Text>
+     <Text style={styles.label}>29. Taluk</Text>
       <View style={{ zIndex: 1000, marginBottom: 10 }}>
       <TextInput
         value={form.taluk}
@@ -274,7 +275,7 @@ placeholderTextColor="#888"
         style={styles.input}
       />
       </View>
-      <Text style={styles.label}>31. Firka</Text>
+      <Text style={styles.label}>30s. Firka</Text>
                 <View style={{ zIndex: 1000, marginBottom: 10 }}>
       <TextInput
         value={form.firka}
@@ -284,7 +285,7 @@ placeholderTextColor="#888"
         style={styles.input}
       />
 </View>
-    <Text style={styles.label}>32. Revenue Village</Text>
+    <Text style={styles.label}>31. Revenue Village</Text>
               <View style={{ zIndex: 1000, marginBottom: 10 }}>
       <TextInput
         value={form.revenueVillage}
@@ -295,7 +296,7 @@ placeholderTextColor="#888"
       />
       </View>
 
-<Text style={styles.question}>29. Crop Season (Choose all that apply):</Text>
+<Text style={styles.question}>32. Crop Season (Choose all that apply):</Text>
 {["Kharif", "Rabi", "Other"].map((season) => (
   <Checkbox.Item
     key={season}
@@ -325,12 +326,12 @@ placeholderTextColor="#888"
 )}
 
 
-  <Text style={styles.label}>34. Livestock at Home</Text>
+  <Text style={styles.label}>33. Livestock at Home</Text>
 <View style={styles.row}>
   <View style={styles.inputHalfWrapper}>
       <Text style={styles.subLabel}>Goat</Text>
 <TextInput
-  placeholder="Goat"
+  placeholder="0"
   value={String(form.livestock.goat)}
   onChangeText={(text) => {updateNestedField("livestock","goat",text)
     
@@ -346,7 +347,7 @@ placeholderTextColor="#888"
  <View style={styles.inputHalfWrapper}>
     <Text style={styles.subLabel}>Sheep</Text>
 <TextInput
-  placeholder="Sheep"
+  placeholder="0"
   value={String(form.livestock.sheep)}
   onChangeText={(text) => {updateNestedField("livestock","sheep",text)
     const sheep = form.livestock.sheep ||"0";
@@ -361,7 +362,7 @@ placeholderTextColor="#888"
 <View style={styles.inputHalfWrapper}>
     <Text style={styles.subLabel}>Milch Animals</Text>
 <TextInput
-  placeholder="Milch animals"
+  placeholder="0"
   value={String(form.livestock.milchAnimals)}
   onChangeText={(text) => {updateNestedField("livestock","milchAnimals",text)
     const milchAnimals = form.livestock.milchAnimals ||"0";
@@ -379,7 +380,7 @@ placeholderTextColor="#888"
    <View style={styles.inputHalfWrapper}>
       <Text style={styles.subLabel}>Draught Animals</Text>
 <TextInput
-  placeholder="Draught"
+  placeholder="0"
   value={String(form.livestock.draught_animals)}
   onChangeText={(text) => {updateNestedField("livestock","draught_animals",text)
     const draught_animals= form.livestock.draught_animals ||"0";
@@ -393,21 +394,21 @@ placeholderTextColor="#888"
  <View style={styles.inputHalfWrapper}>
     <Text style={styles.subLabel}>Poultry</Text>
 <TextInput
-  placeholder="Poultry"
+  placeholder="0"
   value={String(form.livestock.poultry)}
   onChangeText={(text) => {updateNestedField("livestock","poultry",text)
     const poultry= form.livestock.poultry ||"0";
     const livestockCombinedField = `${form.livestock.goat},${form.livestock.sheep},${form.livestock.milchAnimals},${form.livestock.draught_animals},${poultry},${form.livestock.others}`;
     updateField("livestockCombined",livestockCombinedField);
   }}
-  keyboardType="numeric"
+  // keyboardType="numeric"
   style={styles.input}
 />
 </View>
  <View style={styles.inputHalfWrapper}>
     <Text style={styles.subLabel}>Others</Text>
 <TextInput
-  placeholder="Others"
+  placeholder="0"
   value={String(form.livestock.others)}
   onChangeText={(text) => {updateNestedField("livestock","others",text)
     const others= form.livestock.others ||"0";

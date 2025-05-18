@@ -103,10 +103,10 @@ export default function Profile() {
           <Text style={styles.value}>{user?.location}</Text>
         </View>
 
-        <View style={styles.detailRow}>
+        {/* <View style={styles.detailRow}>
           <Text style={styles.label}>Password</Text>
           <Text style={styles.value}>********</Text>
-        </View>
+        </View> */}
 
         {/* Change Password */}
         <TouchableOpacity onPress={() => setShowPasswordFields(!showPasswordFields)}>

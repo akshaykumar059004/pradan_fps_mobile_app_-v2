@@ -132,7 +132,7 @@ export default function LandDevelopment() {
           <Text style={styles.heading}>Proposed Work by the Farmer</Text>
         </View>
 
-      <Text style={styles.question}>31. S.F. No. of the land to be developed</Text>
+      <Text style={styles.question}>34. S.F. No. of the land to be developed</Text>
       <TextInput
         value={form.sfNumber}
         onChangeText={(text) => updateField("sfNumber", text)}
@@ -166,7 +166,7 @@ export default function LandDevelopment() {
 
     <Text style={styles.label}>36. Soil Type</Text>
             {renderCheckboxGroup("soilTypeCombined", ["Red Soil", "Black Cotton", "Sandy Loam", "Laterite"])}
- <Text style={styles.label}>38. Date of Inspection</Text>
+ <Text style={styles.label}>37. Date of Inspection</Text>
                 <TextInput
             value={form.date}
             style={styles.input}
@@ -209,7 +209,7 @@ export default function LandDevelopment() {
 )}
 
 
-      <Text style={styles.label}>40. Area benefited by proposed works (ha)</Text>
+      <Text style={styles.label}>39. Area benefited by proposed works (ha)</Text>
       <TextInput
         value={form.proposalArea}
            placeholder="Enter area"
@@ -220,7 +220,7 @@ export default function LandDevelopment() {
         mode="outlined"
       />
 
-  <Text style={styles.label}>41. Any other works proposed</Text>
+  <Text style={styles.label}>40. Any other works proposed</Text>
       <TextInput
       placeholder="Enter details"
           placeholderTextColor="#888"
@@ -230,7 +230,7 @@ export default function LandDevelopment() {
         mode="outlined"
       />
 
-     <Text style={styles.label}>42. PRADAN contribution (in Rs)</Text>
+     <Text style={styles.label}>41. PRADAN contribution (in Rs)</Text>
       <TextInput
         value={form.pradanContribution}
         onChangeText={(text) => updateField("pradanContribution", text)}
@@ -241,7 +241,7 @@ export default function LandDevelopment() {
         mode="outlined"
       />
 
- <Text style={styles.label}>43. Farmer contribution (in Rs)</Text>
+ <Text style={styles.label}>42. Farmer contribution (in Rs)</Text>
       <TextInput
        placeholder="Enter amount"
           placeholderTextColor="#888"
@@ -254,7 +254,7 @@ export default function LandDevelopment() {
         keyboardType="numeric"
       />
 
-       <Text style={styles.label}>44. Total Estimate Amount (in Rs)</Text>
+       <Text style={styles.label}>43. Total Estimate Amount (in Rs)</Text>
                   <TextInput
                    placeholder="0"
           placeholderTextColor="#888"

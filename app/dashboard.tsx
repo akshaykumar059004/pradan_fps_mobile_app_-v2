@@ -6,6 +6,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Animated,
+  Dimensions,
   FlatList,
   Image,
   Modal,
@@ -17,12 +18,18 @@ import {
   View,
 } from "react-native";
 import PagerView from 'react-native-pager-view';
+import {
+  moderateScale,
+  scale,
+  verticalScale
+} from 'react-native-size-matters';
 import { DashbdStore } from "../storage/DashbdStore";
 import { FormStatus_todayCount, FormStatus_totalCount, useFormStore } from "../storage/useFormStore";
 import { useUserStore } from "../storage/userDatastore";
 const url = Constants.expoConfig.extra.API_URL;
 
 const DashboardScreen: React.FC = () => {
+  const { width, height } = Dimensions.get('window'); 
   const [modalVisible, setModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState('Today');
   const slideAnim = useState(new Animated.Value(0))[0];
@@ -49,7 +56,7 @@ const DashboardScreen: React.FC = () => {
         user_id: user?.id,
       }});
 
-      //  axios.get(`${url}/api/dashboard/getpreviewformsData`, { params: { user_id: user?.id } })
+      //  axios.get(${url}/api/dashboard/getpreviewformsData, { params: { user_id: user?.id } })
       // .then(response => {
       //   const response_total = response.data;
       //   // console.log(response_total);
@@ -297,7 +304,7 @@ const DashboardScreen: React.FC = () => {
     };
     const interpolatedTranslate = slideAnim.interpolate({
       inputRange: [0, 1],
-      outputRange: [0, 80],
+      outputRange: [0, width * 0.2],
     });
      const renderCard = ({ item }: any) => {
         const handleCardPress = () => {
@@ -322,7 +329,7 @@ const DashboardScreen: React.FC = () => {
         };
         return(
             <TouchableOpacity style={styles.card} onPress={handleCardPress}>
-              <MaterialIcons name={item.icon} size={36} color={item.color} />
+              <MaterialIcons name={item.icon} size={width * 0.08} color={item.color} />
               <Text style={styles.count}>{item.count}</Text>
               <Text style={styles.cardLabel}>{item.label}</Text>
             </TouchableOpacity>
@@ -352,7 +359,7 @@ const renderCard2 = ({ item }: any) => {
     };
     return(
     <TouchableOpacity style={styles.card} onPress={handleCardPress}>
-      <MaterialIcons name={item.icon} size={36} color={item.color} />
+      <MaterialIcons name={item.icon} size={width * 0.08} color={item.color} />
       <Text style={styles.count}>{item.count}</Text>
       <Text style={styles.cardLabel}>{item.label}</Text>
     </TouchableOpacity>
@@ -426,12 +433,29 @@ const renderCard2 = ({ item }: any) => {
           contentContainerStyle={{ paddingBottom: 10 }}
         />
         </PagerView>
+
+        
+      {/* Dots indicator */}
+      <View style={styles.dotContainer}>
+        {pageIndex === 0 ? (
+          <View style={styles.activeDot} />
+        ) : (
+          <View style={styles.inactiveDot} />
+        )}
+        {pageIndex === 1 ? (
+          <View style={styles.activeDot} />
+        ) : (
+          <View style={styles.inactiveDot} />
+        )}
+      </View>    
+
+
         <Pressable
           style={styles.newFormButton}
           onPress={() => setModalVisible(true)}
         >
-          <MaterialIcons name="add-circle-outline" size={22} color="#fff" />
-          <Text style={styles.newFormText}>Submit New Form</Text>
+          <MaterialIcons name="add-circle-outline" size={width * 0.10} color="#fff" />
+          <Text style={styles.newFormText}>New Form</Text>
         </Pressable>
         <TouchableOpacity
         style={styles.draftButton}
@@ -439,7 +463,7 @@ const renderCard2 = ({ item }: any) => {
           router.push("/draft");
         }}
       >
-        <MaterialIcons name="insert-drive-file" size={35} color="#fff" />
+        <MaterialIcons name="insert-drive-file" size={width * 0.10} color="#fff" />
         <Text style={styles.newFormText}>Draft</Text>
       </TouchableOpacity>
         
@@ -491,14 +515,14 @@ const renderCard2 = ({ item }: any) => {
       >
         <Text style={styles.cancelText}>Cancel</Text>
       </Pressable>
-      <Pressable
+      {/* <Pressable
         style={[styles.optionButton, styles.cancelButton]}
         onPress={() =>{ setModalVisible(false)
               router.push("/Verifier/verifierdashboard");
         }}
       >
         <Text style={styles.cancelText}>Verifier</Text>
-      </Pressable>
+      </Pressable> */}
     </Pressable>
   </Pressable>
 </Modal>
@@ -508,82 +532,81 @@ const renderCard2 = ({ item }: any) => {
   };
   
   export default DashboardScreen;
-  
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: '#fefefe',
-      paddingHorizontal: 16,
-      paddingTop: 10,
-    },
-    pagerView: {
-      flex: 1,
-    },
-    logo: {
-      margin: 10,
-      width: 220,
-      height: 80,
-      marginBottom: 16,
-      alignSelf: 'center',
-    },
+
+  const styles = StyleSheet.create({  
+  container: {
+    flex: 1,
+    backgroundColor: '#fefefe',
+    paddingHorizontal: scale(16),
+    paddingTop: verticalScale(10),
+  },
+  pagerView: {
+    flex: 1,
+  },
+  logo: {
+    margin: moderateScale(10),               // smooth scaling
+    width: scale(220),                       // horizontal scaling for image width
+    height: verticalScale(80),               // vertical scaling for image height
+    marginBottom: verticalScale(12),         // vertical spacing
+    alignSelf: 'center',
+  },
     profileCard: {
       flexDirection: 'row',
       backgroundColor: '#fff',
-      marginBottom: 12,
-      padding: 16,
-      borderRadius: 12,
+      marginBottom: verticalScale(8),           // vertical scaling for spacing
+      padding: moderateScale(10),                // smooth padding scaling
+      borderRadius: moderateScale(12),          // scaling border radius
       alignItems: 'center',
       shadowColor: '#000',
       shadowOpacity: 0.08,
-      shadowRadius: 5,
-      shadowOffset: { width: 0, height: 2 },
+      shadowRadius: moderateScale(5),           // scaling shadow blur
+      shadowOffset: { width: 0, height: verticalScale(2) },  // vertical scaling for shadow offset
       elevation: 4,
     },
     profileImage: {
-      width: 55,
-      height: 55,
-      borderRadius: 100,
-      marginRight: 12,
+      width: scale(55),                        // scale the width
+      height: scale(55),                       // scale the height
+      borderRadius: scale(100),                // rounded image with scaling
+      marginRight: scale(12),                  // horizontal margin scaling
     },
     profileText: {
       flex: 1,
     },
     profileName: {
-      fontSize: 16,
+      fontSize: moderateScale(16),             // moderate scaling for font size
       fontWeight: 'bold',
       color: '#134e13',
     },
     profileDesignation: {
-      fontSize: 14,
+      fontSize: moderateScale(14),             // moderate scaling for font size
       color: '#555',
-      marginBottom: 2,
+      marginBottom: verticalScale(2),          // vertical scaling for spacing
     },
     profileEmail: {
-      fontSize: 13,
+      fontSize: moderateScale(13),             // moderate scaling for font size
       color: '#777',
     },
     dashboardHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      marginBottom: 20,
-      marginTop: 20,
-      marginLeft: 10,
+      marginBottom: verticalScale(15),          // vertical scaling for spacing
+      marginTop: verticalScale(20),             // vertical scaling for top margin
+      marginLeft: scale(10),                    // horizontal scaling for left margin
     },
     dashboardTitle: {
-      fontSize: 20,
+      fontSize: moderateScale(20),              // moderate scaling for font size
       fontWeight: 'bold',
       color: '#134e13',
     },
-   
     slideToggleContainer: {
       flexDirection: 'row',
       backgroundColor: '#e6f0e6',
-      borderRadius: 10,
+      borderRadius: moderateScale(10),          // moderate scaling for border radius
       overflow: 'hidden',
-      marginRight: 10,
-      width: 150,
-      height: 30,
+      marginRight: scale(10),                   // horizontal scaling for right margin
+      width: scale(150),                        // scaling width of the container
+      height: verticalScale(30),                // vertical scaling for height
       position: 'relative',
     },
     slideButton: {
@@ -593,8 +616,9 @@ const renderCard2 = ({ item }: any) => {
       zIndex: 1,
     },
     slideText: {
-      fontSize: 14,
-      fontWeight: '600',
+      // fontFamily:"Courier",
+      fontSize: moderateScale(14),             // moderate scaling for font size
+      fontWeight: 'bold',
       color: '#134e13',
     },
     activeText: {
@@ -602,125 +626,155 @@ const renderCard2 = ({ item }: any) => {
     },
     slideHighlight: {
       position: 'absolute',
-      width: 80,
+      width: scale(80),                       // scaled width for the highlight
       height: '100%',
       backgroundColor: '#134e13',
-      borderRadius: 10,
+      borderRadius: moderateScale(10),        // scaling border radius
       zIndex: 0,
     },
     row: {
       justifyContent: 'space-between',
-      marginBottom: 15,
+      marginBottom: verticalScale(0),        // vertical scaling for margin
+      paddingTop:scale(8),
     },
-    card: {
-      backgroundColor: '#fff',
-      borderRadius: 14,
-      paddingVertical: 20,
-      paddingHorizontal: 12,
-      alignItems: 'center',
-      justifyContent: 'center',
-      flex: 1,
-      marginHorizontal: 5,
-      shadowColor: '#000',
-      shadowOpacity: 0.1,
-      shadowRadius: 4,
-      shadowOffset: { width: 0, height: 2 },
-      elevation: 5,
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: moderateScale(14),             // smooth scaling for rounded corners
+    paddingVertical: verticalScale(20),          // vertical scaling
+    paddingHorizontal: scale(12),              // horizontal scaling
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    marginHorizontal: scale(5),                  // horizontal margin
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: moderateScale(4),              // scale shadow blur
+    shadowOffset: {
+      width: 0,
+      height: verticalScale(0),                  // scale shadow height
     },
-    count: {
-      fontSize: 22,
-      fontWeight: 'bold',
-      marginTop: 10,
-      color: '#333',
-    },
-    cardLabel: {
-      marginTop: 5,
-      fontSize: 14,
-      fontWeight: '600',
-      color: '#666',
-      textAlign: 'center',
-    },
-     draftButton: {
-      backgroundColor: '#FFA500',
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      justifyContent: 'center',
-      paddingVertical: 14,
-      paddingHorizontal: 54,
-      borderRadius: 10,
-      position: 'absolute',
-      bottom:60,
-      right: 20,
-      zIndex: 10,
-    },
-    newFormButton: {
-      backgroundColor: '#134e13',
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      justifyContent: 'center',
-      paddingVertical: 20,
-      borderRadius: 10,
-      marginBottom: 80,
-      alignSelf: 'center',
-      paddingHorizontal: 25,
-      right:99,
-      bottom:-18,
-    },
-    newFormText: {
-      color: '#fff',
-      fontWeight: 'bold',
-      fontSize: 16,
-    },
-    draft:{
-        fontWeight:'bold',
-    },
-    modalBackground: {
-      flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.75)',
-      justifyContent: 'flex-end',
-    },
-    modalContainer: {
-      backgroundColor: '#ffffff',
-      borderTopLeftRadius: 24,
-      borderTopRightRadius: 24,
-      padding: 24,
-      height: '50%',
-      alignItems: 'center',
-    },
-    modalHeader: {
-      fontSize: 18,
-      fontWeight: 'bold',
-      color: '#134e13',
-      marginBottom: 18,
-    },
-    optionButton: {
-      backgroundColor: '#134e13',
-      paddingVertical: 14,
-      paddingHorizontal: 20,
-      borderRadius: 12,
-      marginBottom: 14,
-      width: '100%',
-      alignItems: 'center',
-      elevation: 4,
-      shadowColor: '#000',
-      shadowOpacity: 0.2,
-      shadowRadius: 6,
-      shadowOffset: { width: 0, height: 3 },
-    },
-    optionText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    cancelButton: {
-      backgroundColor: '#dcdcdc',
-    },
-    cancelText: {
-      color: '#333333',
-      fontSize: 16,
-      fontWeight: '600',
-    },
-  });
+    elevation: 5,
+  },
+  count: {
+    fontSize: moderateScale(22),
+    fontWeight: 'bold',
+    marginTop: verticalScale(10),
+    color: '#333',
+  },
+  cardLabel: {
+    marginTop: verticalScale(5),
+    fontSize: moderateScale(14),
+    fontWeight: '600',
+    color: '#666',
+    textAlign: 'center',
+  },
   
+  newFormButton: {
+    backgroundColor: '#134e13',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scale(8),
+    justifyContent: 'center',
+    paddingVertical: verticalScale(14),
+    paddingHorizontal: scale(15),
+    borderRadius: moderateScale(10),
+    position: 'absolute',
+    bottom: verticalScale(30),
+    left: scale(20),
+    zIndex: 10, // Ensure it's above the separator
+  },
+  
+  draftButton: {
+    backgroundColor: '#FFA500',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: scale(8),
+    justifyContent: 'center',
+    paddingVertical: verticalScale(14),
+    paddingHorizontal: scale(34),
+    borderRadius: moderateScale(10),
+    position: 'absolute',
+    bottom: verticalScale(30),
+    right: scale(20),
+    zIndex: 10,
+  },
+  
+
+  
+  newFormText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: moderateScale(16),
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    backgroundColor: '#ffffff',
+    borderTopLeftRadius: moderateScale(24),
+    borderTopRightRadius: moderateScale(24),
+    padding: scale(24),
+    height: '50%',
+    alignItems: 'center',
+  },
+  modalHeader: {
+    fontSize: moderateScale(18),
+    fontWeight: 'bold',
+    color: '#134e13',
+    marginBottom: verticalScale(18),
+  },
+  optionButton: {
+    backgroundColor: '#134e13',
+    paddingVertical: verticalScale(14),
+    paddingHorizontal: scale(20),
+    borderRadius: moderateScale(12),
+    marginBottom: verticalScale(14),
+    width: '100%',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: scale(6),
+    shadowOffset: { width: 0, height: verticalScale(3) },
+  },
+  optionText: {
+    color: '#fff',
+    fontSize: moderateScale(16),
+    fontWeight: '600',
+  },
+  cancelButton: {
+    backgroundColor: '#dcdcdc',
+  },
+  cancelText: {
+    color: '#333333',
+    fontSize: moderateScale(16),
+    fontWeight: '600',
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#e6e6e6',
+    marginVertical: verticalScale(16),
+    zIndex: 1,  // Keep it at lower zIndex so it's below the New Form button
+  }, 
+  dotContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: verticalScale(100),
+  },
+  activeDot: {
+    width: scale(12),
+    height: scale(12),
+    borderRadius: scale(6),
+    backgroundColor: '#134e13',
+    margin: scale(5),
+  },
+  inactiveDot: {
+    width: scale(12),
+    height: scale(12),
+    borderRadius: scale(6),
+    backgroundColor: '#ddd',
+    margin: scale(5),
+  },
+  });

@@ -146,20 +146,20 @@ export default function PondDevelopment() {
           <Text style={styles.heading}>Design of Farm Pond</Text>
         </View>
 
-     <Text style={styles.label}>35. S.F. No. of the land to be developed</Text>
+     <Text style={styles.label}>34. S.F. No. of the land to be developed</Text>
       <TextInput
         value={form.sfNumber}
         onChangeText={(text) => updateField("sfNumber", text)}
         style={styles.input}
-        mode="outlined"
+         
          placeholder="Enter S.F. Number"
           placeholderTextColor="#888"
       />
 
-      <Text style={styles.label}>35.a) Latitude and Longitude</Text>
+      <Text style={styles.label}>35. Latitude and Longitude</Text>
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <TextInput
-          mode="outlined"
+           
           style={[styles.input, { flex: 1, marginRight: 5 }]}
           placeholder="Latitude"
           placeholderTextColor="#888"
@@ -168,7 +168,7 @@ export default function PondDevelopment() {
           keyboardType="numeric"
         />
         <TextInput
-          mode="outlined"
+           
           style={[styles.input, { flex: 1, marginLeft: 5 }]}
           placeholder="Longitude"
           placeholderTextColor="#888"
@@ -181,7 +181,7 @@ export default function PondDevelopment() {
          <Text style={styles.label}>36. Soil Type</Text>
         {renderCheckboxGroup("soilTypeCombined", ["Red Soil", "Black Cotton", "Sandy Loam", "Laterite"])}
 
-       <Text style={styles.label}>38. Date of Inspection</Text>
+       <Text style={styles.label}>37. Date of Inspection</Text>
                <TextInput
            value={form.date}
            style={styles.input}
@@ -194,9 +194,9 @@ export default function PondDevelopment() {
         onChangeText={(text) => updateField("landBenefit", text)}
         style={styles.input}
         keyboardType="numeric"
-        mode="outlined"
+         
       /> */}
-   <Text style={styles.label}>39. Area benifited by proposed works(ha)</Text>
+   <Text style={styles.label}>38. Area benifited by proposed works(ha)</Text>
       <TextInput
         value={form.proposalArea}
         onChangeText={(text) => updateField("proposalArea", text)}
@@ -204,12 +204,12 @@ export default function PondDevelopment() {
           placeholderTextColor="#888"
         style={styles.input}
         keyboardType="numeric"
-        mode="outlined"
+         
       />
 
    
 
-     <Text style={styles.label}>40. Length in meter</Text>
+     <Text style={styles.label}>39.a) Length in meter</Text>
       <TextInput
         value={form.length}
          placeholder="Enter length"
@@ -217,10 +217,10 @@ export default function PondDevelopment() {
         onChangeText={(text) => updateField("length", text)}
         style={styles.input}
         keyboardType="numeric"
-        mode="outlined"
+        
       />
 
-          <Text style={styles.label}>41. Breadth in meter</Text>
+          <Text style={styles.label}>39.b) Breadth in meter</Text>
       <TextInput
         value={form.breadth}
         onChangeText={(text) => updateField("breadth", text)}
@@ -228,10 +228,10 @@ export default function PondDevelopment() {
          placeholder="Enter breadth"
           placeholderTextColor="#888"
         keyboardType="numeric"
-        mode="outlined"
+       
       />
 
-  <Text style={styles.label}>42. Depth in meter</Text>
+  <Text style={styles.label}>39.c) Depth in meter</Text>
       <TextInput
         value={form.depth}
         onChangeText={(text) => updateField("depth", text)}
@@ -239,20 +239,20 @@ export default function PondDevelopment() {
         keyboardType="numeric"
          placeholder="Enter depth"
           placeholderTextColor="#888"
-        mode="outlined"
+         
       />
 
-      <Text style={styles.label}>43.Volume of Excavation</Text>
+      <Text style={styles.label}>40. Volume of Excavation</Text>
       <TextInput
       placeholder='0'
         placeholderTextColor="#888"
         value={form.volume}
         style={styles.input}
-        mode="outlined"
+         
         editable={false}
       />
 
-      <Text style={styles.label}>44. PRADAN contribution (in Rs)</Text>
+      <Text style={styles.label}>41. PRADAN contribution (in Rs)</Text>
       <TextInput
         value={form.pradanContribution}
         onChangeText={(text) => updateField("pradanContribution", text)}
@@ -260,11 +260,11 @@ export default function PondDevelopment() {
          placeholder="Enter amount"
           placeholderTextColor="#888"
         keyboardType="numeric"
-        mode="outlined"
+         
       />
 
      
-          <Text style={styles.label}>45. Farmer contribution (in Rs)</Text>
+          <Text style={styles.label}>42. Farmer contribution (in Rs)</Text>
            <TextInput
              value={form.farmerContribution}
              placeholder="Enter amount"
@@ -277,14 +277,14 @@ export default function PondDevelopment() {
              keyboardType="numeric"
            />
      
-           <Text style={styles.label}>46. Total Estimate Amount (in Rs)</Text>
+           <Text style={styles.label}>43. Total Estimate Amount (in Rs)</Text>
                        <TextInput
                        value={form.totalEstimate}
                          editable={false}
                          placeholder="0"
           placeholderTextColor="#888"
                          style={styles.input}
-                         mode="outlined"
+                          
                        />
       
  <TouchableOpacity style={styles.nextBtn}  onPress={handleNext}>
@@ -366,7 +366,7 @@ const styles = StyleSheet.create({
     fontSize: width * 0.035,
     marginVertical: height * 0.01,
     color: '#333',
-    fontWeight: '600',
+    fontWeight: 'bold',
   },
   input: {
      height: height * 0.06,

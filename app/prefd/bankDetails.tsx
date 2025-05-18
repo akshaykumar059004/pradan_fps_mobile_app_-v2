@@ -239,7 +239,7 @@ export default function BankDetails() {
       />
       <Text style={styles.heading}>Bank Details</Text>
 </View>
-      <Text style={styles.label}>45. Name of Account Holder</Text>
+      <Text style={styles.label}>44. Name of Account Holder</Text>
       <TextInput
       placeholder="Enter name"
       placeholderTextColor="#888"
@@ -248,7 +248,7 @@ export default function BankDetails() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>46. Account Number</Text>
+      <Text style={styles.label}>45. Account Number</Text>
       <TextInput
        value={String(form.accountNumber)}
         placeholder="Enter account number"
@@ -261,7 +261,7 @@ export default function BankDetails() {
         keyboardType="numeric"
       />
 
-      <Text style={styles.label}>47. Name of the Bank</Text>
+      <Text style={styles.label}>46. Name of the Bank</Text>
       <TextInput
         value={form.bankName}
         placeholder="Enter bank name"
@@ -270,7 +270,7 @@ export default function BankDetails() {
         style={styles.input}
       />
 
-       <Text style={styles.label}>48. Branch</Text>
+       <Text style={styles.label}>47. Branch</Text>
       <TextInput
         value={form.branch}
           placeholder="Enter branch name"
@@ -279,7 +279,7 @@ export default function BankDetails() {
         style={styles.input}
       />
 
-      <Text style={styles.label}>49. IFSC</Text>
+      <Text style={styles.label}>48. IFSC</Text>
       <TextInput
         value={form.ifscCode}
         placeholder="Enter IFSC code"
@@ -291,7 +291,7 @@ export default function BankDetails() {
         autoCapitalize="characters"
       />
 
-<Text style={styles.label}>50. Farmer has agreed for the work, and his contribution</Text>
+<Text style={styles.label}>49. Farmer has agreed for the work, and his contribution</Text>
       <RadioButton.Group
         onValueChange={(value) => updateField("farmerAgreed", value)}
         value={form.farmerAgreed}
