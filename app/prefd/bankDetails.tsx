@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 import { Buffer } from "buffer";
 import Constants from "expo-constants";
@@ -7,13 +8,14 @@ import * as FileSystem from "expo-file-system"; // Import FileSystem
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
-import { Button, IconButton, RadioButton } from "react-native-paper";
+import { Dimensions, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import * as Animatable from 'react-native-animatable';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { IconButton, RadioButton } from "react-native-paper";
 import { useFormStore } from "../../storage/useFormStore";
 import { useUserStore } from "../../storage/userDatastore";
 
-
-
+const { width, height } = Dimensions.get('window');
 const url = Constants.expoConfig?.extra.API_URL;
 
 export default function BankDetails() {
@@ -75,9 +77,7 @@ export default function BankDetails() {
     const secureName = [...randomBytes].map((b) => b.toString(16).padStart(2, '0')).join('') + `.${ext}`;
     console.log(secureName);
 
-    const uploadURL = await axios.get(`${url}/api/files/getUploadurl`,{params: {
-      fileName: secureName,
-    }});
+    const uploadURL = await axios.get(`${url}/api/files/getUploadurl`,{params: {fileName: secureName,}});
     console.log("Upload URL (Frontend):",uploadURL.data);
     //const formData = new FormData();  
     // formData.append("file", {
@@ -109,6 +109,7 @@ export default function BankDetails() {
       [field]: {
         ...(prev.submittedFiles?.[field] || {}),
         name: secureName,
+        name2: file.name, 
       },
     },
   }));
@@ -215,35 +216,43 @@ export default function BankDetails() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+      <KeyboardAwareScrollView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.inner}>
+      <Animatable.View animation="fadeInUp" duration={600}>
+     
+
+<Text style={styles.heading_land}>
+  {fromland === "true"
+    ? "LAND REDEVELOPMENT FORM"
+    : frompond === "true"
+    ? "POND REDEVELOPMENT FORM<"
+    : fromplantation === "true"
+    ? "PLANTATION REDEVELOPMENT FORM<"
+    : "Form"}
+</Text>
+    <View style={styles.header}>
       <IconButton
         icon="arrow-left"
-        size={24}
+       size={width * .06} 
         style={styles.backButton}
         onPress={() => router.back()}
       />
-
-<Text style={styles.title}>
-  {fromland === "true"
-    ? "Land Form"
-    : frompond === "true"
-    ? "Pond Form"
-    : fromplantation === "true"
-    ? "Plantation Form"
-    : "Form"}
-</Text>
-      <Text style={styles.subtitle}>Bank Details</Text>
-
-      <Text style={styles.question}>44. Name of Account Holder:</Text>
+      <Text style={styles.heading}>Bank Details</Text>
+</View>
+      <Text style={styles.label}>45. Name of Account Holder</Text>
       <TextInput
+      placeholder="Enter name"
+      placeholderTextColor="#888"
         value={form.accountHolderName}
         onChangeText={(text) => updateField("accountHolderName", text)}
         style={styles.input}
       />
 
-      <Text style={styles.question}>45. Account Number:</Text>
+      <Text style={styles.label}>46. Account Number</Text>
       <TextInput
        value={String(form.accountNumber)}
+        placeholder="Enter account number"
+            placeholderTextColor="#888"
         // value={form.accountNumber}
         onChangeText={(text) => {updateField("accountNumber", text)
           
@@ -252,31 +261,37 @@ export default function BankDetails() {
         keyboardType="numeric"
       />
 
-      <Text style={styles.question}>46. Name of the Bank:</Text>
+      <Text style={styles.label}>47. Name of the Bank</Text>
       <TextInput
         value={form.bankName}
+        placeholder="Enter bank name"
+        placeholderTextColor="#888"
         onChangeText={(text) => updateField("bankName", text)}
         style={styles.input}
       />
 
-      <Text style={styles.question}>47. Branch:</Text>
+       <Text style={styles.label}>48. Branch</Text>
       <TextInput
         value={form.branch}
+          placeholder="Enter branch name"
+            placeholderTextColor="#888"
         onChangeText={(text) => updateField("branch", text)}
         style={styles.input}
       />
 
-      <Text style={styles.question}>48. IFSC:</Text>
+      <Text style={styles.label}>49. IFSC</Text>
       <TextInput
         value={form.ifscCode}
+        placeholder="Enter IFSC code"
+            placeholderTextColor="#888"
         onChangeText={(text) => {
-         const filteredText = text.replace(/[^0-9]/g, '').slice(0, 11);
+        const filteredText = text.replace(/[^a-zA-Z0-9]/g, '').slice(0, 11);
           updateField("ifscCode", filteredText)}}
         style={styles.input}
         autoCapitalize="characters"
       />
 
-      <Text style={styles.question}>49. Farmer has agreed for the work and his contribution:</Text>
+<Text style={styles.label}>50. Farmer has agreed for the work, and his contribution</Text>
       <RadioButton.Group
         onValueChange={(value) => updateField("farmerAgreed", value)}
         value={form.farmerAgreed}
@@ -287,7 +302,8 @@ export default function BankDetails() {
 
     {!fromPreview && (
   <>
-    <Text style={styles.question}>50. Upload Documents:</Text>
+    <Text style={styles.label}>50. Upload Documents:</Text>
+       <View style={styles.uploadGroup}>
     {[
       { label: "Patta", key: "patta", type: "pdf" },
       { label: "ID Card", key: "idCard", type: "pdf" },
@@ -296,45 +312,58 @@ export default function BankDetails() {
       { label: "Bank Passbook", key: "bankPassbook", type: "pdf" },
       { label: "Geo Tag", key: "geoTag", type: "image" },
     ].map((file) => (
-      <React.Fragment key={file.key}>
-        <Button
-          mode="outlined"
-          onPress={() => handleUpload(file.key, file.type)}
-          style={styles.uploadButton}
-        >
-          Upload {file.label}
-        </Button>
-        {form.submittedFiles[file.key]?.name && (
-          <Text style={styles.uploadedFile}>
-            Uploaded: {form.submittedFiles[file.key].name}
-          </Text>
-        )}
-      </React.Fragment>
+<React.Fragment key={file.key}>
+  <TouchableOpacity
+    onPress={() => handleUpload(file.key, file.type)}
+    style={styles.uploadBox}
+  >
+    <Ionicons
+      name={file.label ? 'document-attach' : 'cloud-upload-outline'}
+      size={width * 0.05}
+      color="#0B8B42"
+    />
+    <Text style={styles.uploadLabel}>{file.label}</Text>
+
+    {form.submittedFiles[file.key]?.name && (
+      <Text style={styles.uploadStatus}>
+        Uploaded: {form.submittedFiles[file.key].name2}
+      </Text>
+    )}
+  </TouchableOpacity>
+</React.Fragment>
+
+
     ))}
+    </View>
   </>
 )}
-      
-      <Button
+       <TouchableOpacity style={styles.nextBtn} onPress={() =>handlePreview() }>
+                  <Text style={styles.nextBtnText}>{fromPreview ? "Preview" : "Next"}</Text>
+                </TouchableOpacity>
+      {/* <Button
         mode="contained"
         onPress={handlePreview}
         style={styles.button}
         contentStyle={styles.buttonContent}
       >
         {fromPreview ? "Preview" : "Next"}
-      </Button>
+      </Button> */}
+      </Animatable.View>
     </ScrollView>
+    
+    </KeyboardAwareScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  backButton: {
-    alignSelf: "flex-start",
-    marginBottom: 10,
-  },
+  // container: {
+  //   padding: 20,
+  //   paddingBottom: 40,
+  // },
+  // backButton: {
+  //   alignSelf: "flex-start",
+  //   marginBottom: 10,
+  // },
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -351,13 +380,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 5,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 5,
-  },
+  // input: {
+  //   borderWidth: 1,
+  //   borderColor: "#ccc",
+  //   padding: 10,
+  //   marginBottom: 10,
+  //   borderRadius: 5,
+  // },
   uploadButton: {
     marginTop: 8,
     marginBottom: 4,
@@ -378,5 +407,111 @@ const styles = StyleSheet.create({
     borderColor: "#ccc",
     borderRadius: 5,
     marginBottom: 10,
-  }
+  },
+   container: {
+    flex: 1,
+    backgroundColor: '#F1F7ED',
+  },
+  inner: {
+    padding: width * 0.05,
+    paddingBottom: height * 0.025,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: height * 0.025,
+  },
+  backButton: {
+    marginRight: width * 0.025,
+  },
+  heading: {
+    fontSize: width * 0.05,
+    fontWeight: 'bold',
+    color: '#0B8B42',
+  },
+  label: {
+    fontSize: width * 0.035,
+    marginVertical: height * 0.01,
+    color: '#333',
+    fontWeight: '600',
+  },
+  heading_land: {
+    fontSize: width * 0.055,
+    fontWeight: 'bold',
+    color: '#0B8B42',
+    marginBottom: height * 0.025,
+    textAlign: 'center',
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#A5D6A7',
+    borderRadius: width * 0.025,
+    paddingHorizontal: width * 0.035,
+    paddingVertical: height * 0.015,
+    backgroundColor: '#E8F5E9',
+    color: '#333',
+    fontSize: width * 0.035,
+    marginBottom: height * 0.015,
+  },
+  radioGroup: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: height * 0.015,
+  },
+  radioOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: width * 0.04,
+    marginBottom: height * 0.01,
+  },
+  radioText: {
+    marginLeft: width * 0.015,
+    fontSize: width * 0.035,
+    color: '#333',
+  },
+  uploadGroup: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  uploadBox: {
+    width: '48%',
+    borderWidth: 1,
+    borderColor: '#A5D6A7',
+    borderRadius: width * 0.025,
+    padding: width * 0.03,
+    marginBottom: height * 0.02,
+    backgroundColor: '#E8F5E9',
+    alignItems: 'center',
+  },
+  uploadLabel: {
+    fontSize: width * 0.035,
+    fontWeight: '600',
+    marginTop: height * 0.01,
+    color: '#333',
+  },
+uploadStatus: {
+  fontSize: width * 0.03,
+  color: '#777',
+  marginTop: height * 0.005,
+  textAlign: 'center',
+  width: width * 0.4,     // Limit width to half screen
+  alignSelf: 'center',
+  flexWrap: 'wrap',
+},
+
+
+  nextBtn: {
+    backgroundColor: '#134e13',
+    paddingVertical: height * 0.018,
+    borderRadius: width * 0.025,
+    alignItems: 'center',
+    marginTop: height * 0.025,
+    marginBottom: height * 0.025,
+  },
+  nextBtnText: {
+    color: '#fff',
+    fontSize: width * 0.04,
+    fontWeight: '600',
+  },
 });

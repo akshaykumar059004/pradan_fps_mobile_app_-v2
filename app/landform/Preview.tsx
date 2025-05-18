@@ -1,13 +1,15 @@
+import { Ionicons } from '@expo/vector-icons';
 import axios from "axios";
 import Constants from "expo-constants";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect } from "react";
-import { Alert, Image, ScrollView, StyleSheet, View } from "react-native";
-import { Button, Card, Divider, IconButton, Text } from "react-native-paper";
+import { Alert, Dimensions, Image, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Card, Divider, Text } from "react-native-paper";
 import { useDraftStore } from "../../storage/DraftStore";
 import { useFormStore } from "../../storage/useFormStore";
 const url = Constants.expoConfig.extra.API_URL;
-
+const { width, height } = Dimensions.get('window');
+const scaleFont = size => size * (width / 375);
 export default function   Preview() {
   const router = useRouter();
   const { id,fromsubmit,returnsubmit,fromPreview} = useLocalSearchParams<{ id?: string , returnsubmit?: string,fromsubmit?: string, fromPreview?:string;}>();
@@ -18,7 +20,6 @@ const isSubmittedPreview = !!id;
 const selectedForm = React.useMemo(() => {
   if (fromsubmit) {
 
-   
     // console.log(JSON.stringify(data) + "inside");
     return data; // Always use updated data when fromsubmit
   }
@@ -117,18 +118,28 @@ const handleSubmit = async () => {
   
   const renderSection = (title: string, fields: any[], editRoute: string) => (
     <Card style={styles.card}>
-      <Card.Title title={title} />
+<Card.Title title={title} titleStyle={styles.sectionTitle} />
       <Card.Content>
-        {fields.map((field, index) => (
-          <View key={index} style={styles.fieldContainer}>
-            <Text style={styles.label}>{field.label}</Text>
-            {Array.isArray(field.value) ? (
-              field.value.map((item, idx) => {
-                if (typeof item === "object" && item?.label && item?.uri) {
-                  return (
-                    <View key={idx} style={styles.fileRow}>
-                      <Text style={styles.value}>{item.label}</Text>
-                      <Button
+        {fields.map((field, index) => {
+  const nextField = fields[index + 1];
+  const isNextSubLabel = nextField && nextField.subLabel && !nextField.label;
+
+  return (
+    <View key={index} style={styles.fieldContainer}>
+      {/* Show label if exists */}
+      {field.label && <Text style={styles.label}>{field.label}</Text>}
+
+      {/* Show subLabel if exists */}
+      {field.subLabel && <Text style={styles.subLabel}>{field.subLabel}</Text>}
+
+      {/* Render value(s) */}
+      {Array.isArray(field.value) ? (
+        field.value.map((item, idx) => {
+          if (typeof item === "object" && item?.label && item?.uri) {
+            return (
+              <View key={idx} style={styles.fileRow}>
+                <Text style={styles.value}>{item.label}</Text>
+                 {/* <Button
                         mode="text"
                         onPress={() =>
                           router.push({pathname: "/pdfViewer",params: { uri: item.uri },})
@@ -136,38 +147,67 @@ const handleSubmit = async () => {
                         compact
                       >
                         View
-                      </Button>
-                    </View>
-                  );
-                } else if (typeof item === "object") {
-                  return (
-                    <Text key={idx} style={styles.value}>
-                      {JSON.stringify(item)}
-                    </Text>
-                  );
-                } else {
-                  return (
-                    <Text key={idx} style={styles.value}>
-                      {item}
-                    </Text>
-                  );
-                }
-              })
-            ) : typeof field.value === "object" && field.value !== null ? (
-              Object.entries(field.value).map(([key, val], idx) => (
-                <Text key={idx} style={styles.value}>{`${key}: ${val}`}</Text>
-              ))
-            ) : (
-              <Text style={styles.value}>{field.value}</Text>
-            )}
-            <Divider style={styles.divider} />
-          </View>
-        ))}
+                      </Button> */}
+              </View>
+            );
+          } else if (typeof item === "object") {
+            return (
+              <Text key={idx} style={styles.value}>
+                {JSON.stringify(item)}
+              </Text>
+            );
+          } else {
+            return (
+              <Text key={idx} style={styles.value}>
+                {item}
+              </Text>
+            );
+          }
+        })
+      ) : typeof field.value === "object" && field.value !== null ? (
+        Object.entries(field.value).map(([key, val], idx) => (
+          <Text key={idx} style={styles.subLabel}>
+  <Text style = {styles.subLabel}>{key}: </Text>
+  <Text style={styles.value}>{val}</Text>
+</Text>
+        ))
+      ) : (
+        <Text style={styles.value}>{field.value}</Text>
+      )}
+
+      {/* Divider logic:
+          - If field has label AND subLabel, no divider here (between them)
+          - If subLabel and next field is subLabel too, no divider yet
+          - Otherwise show divider */}
+      {!(field.label && field.subLabel) && !isNextSubLabel && <Divider style={styles.divider} />}
+    </View>
+  );
+})}
+
+
       </Card.Content>
       {canEdit() && (
-  <Card style={styles.card}>
+            <View style={styles.editButtonContainer}>
     <Card.Actions>
-      <Button
+      <TouchableOpacity style={styles.editBtn}
+       onPress={() =>
+          router.push({
+            pathname: editRoute,
+            params: {
+              id: id,
+              fromPreview: "true",
+              returnTo: "/landform/Preview",
+              fromsubmit: fromsubmit,
+              returnsubmit: returnsubmit,
+              fromedit:"true",
+            },
+          })
+        }
+    >
+                  <Ionicons name="create-outline" size={ width * 0.06} color="#0B8B42" />
+                  <Text style={styles.editText}>Edit</Text>
+                </TouchableOpacity>
+      {/* <Button
         mode="outlined"
         onPress={() =>
           router.push({
@@ -184,17 +224,16 @@ const handleSubmit = async () => {
         }
       >
         Edit
-      </Button>
+      </Button> */}
     </Card.Actions>
-  </Card>
+    </View>
 )}
-
     </Card>
   );
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <IconButton
+      {/* <IconButton
      icon="arrow-left"
      size={24}
      style={styles.backButton}
@@ -205,21 +244,33 @@ const handleSubmit = async () => {
       router.back(); // Go back normally
     }
   }}
-/>
-      <Text style={styles.title}>Land Form</Text>
-      <View style={styles.farmerPhotoContainer}>
-        {selectedForm?.bankDetails?.submittedFiles?.farmerPhoto?.uri ? (
-          <Image
-            source={{ uri: selectedForm.bankDetails.submittedFiles.farmerPhoto.uri }}
-            style={styles.farmerPhoto}
-            resizeMode="cover"
-          />
-        ) : (
-          <Text style={styles.noPhotoText}>Add a farmer photo</Text>
-        )}
-      </View>
+/> */}
+      <View style={styles.headerContainer}>
+  <TouchableOpacity  onPress={() => {
+    if (fromsubmit) {
+      router.push(returnsubmit); // Go back to total submitted page
+    } else {
+      router.back(); // Go back normally
+    }
+  }}>
+    <Ionicons name="arrow-back" size={width * 0.06} color="#0B8B42" style={styles.backArrow} />
+  </TouchableOpacity>
+  <Text style={styles.heading_land}>LAND REDEVELOPMENT FORM</Text>
+</View>
+      <View style={styles.imageContainer}>
+  {selectedForm?.bankDetails?.submittedFiles?.farmerPhoto?.uri ? (
+    <Image
+      source={{ uri: selectedForm.bankDetails.submittedFiles.farmerPhoto.uri }}
+      style={styles.photo}
+      resizeMode="cover"
+    />
+  ) : (
+    <Text style={styles.noPhotoText}>Add a farmer photo</Text>
+  )}
+</View>
+
       {renderSection("Basic Details", [
-         {label : "Date",value: selectedForm.landDevelopment?.date},
+        //  {label : "Date",value: selectedForm.landDevelopment?.date},
         {label : "ID",value: id},
         { label: "1. Name of Farmer", value: selectedForm.basicDetails?.name},
         { label: "1-2. Age", value: selectedForm.basicDetails?.age},
@@ -233,12 +284,15 @@ const handleSubmit = async () => {
         { label: "8. Gender", value: selectedForm.basicDetails?.gender},
         { label: "9. Father / Spouse Name", value: selectedForm.basicDetails?.fatherSpouse },
         { label: "10. Type of Household", value: selectedForm.basicDetails?.householdType },
-        // { label: "11. Household Members - Adults , childern", value: selectedForm.basicDetails?.hhcombined},
-        { label: "11. Household Members - Adults", value: selectedForm.basicDetails?.adults },
-        { label: "    Household Members - Children", value: selectedForm.basicDetails?.children },
-        { label: "12. Occupation of Household Members (Agriculture , Business , Others)", value: selectedForm.basicDetails?.occupation},
+        { label: "11. Household Members"},
+        { subLabel: "Adults", value: selectedForm.basicDetails?.adults },
+        { subLabel: "Children", value: selectedForm.basicDetails?.children },
+        { label: "12. Occupation of Household Members ",value: selectedForm.basicDetails?.occupation},
+          //  { subLabel: "Agriculture", value: selectedForm.basicDetails?.occupation.agriculture },
+          //  { subLabel: "Business", value: selectedForm.basicDetails?.occupation.business },
+          //  { subLabel: "Others", value: selectedForm.basicDetails?.occupation.other },
         { label: "13. Special Category", value: selectedForm.basicDetails?.specialCategory ? "Yes" : "No" },
-        { label: "    Special Category Number", value: selectedForm.basicDetails?.specialCategoryNumber },
+        { subLabel: "Special Category Number", value: selectedForm.basicDetails?.specialCategoryNumber },
         { label: "14. Caste", value: selectedForm.basicDetails?.caste },
         { label: "15. House Ownership", value: selectedForm.basicDetails?.houseOwnership },
         { label: "16. Type of House", value: selectedForm.basicDetails?.houseType },
@@ -253,27 +307,31 @@ const handleSubmit = async () => {
       {renderSection("Land Ownership & Livestock", [
         { label: "23. Land Ownership", value: selectedForm.landOwnership?.landOwnershipType },
         { label: "24. Well for Irrigation", value: selectedForm.landOwnership?.hasWell },
-        { label: "    Area Irrigated (ha)", value: selectedForm.landOwnership?.areaIrrigated },
-        { label: "25. Irrigated Lands (ha) (rainfed , tankfed , wellIrrigated)", value: selectedForm.landOwnership?.irrigatedLand},
+        { subLabel: "Area Irrigated (ha)", value: selectedForm.landOwnership?.areaIrrigated },
+        { label: "25. Irrigated Lands (ha)",value: selectedForm.landOwnership?.irrigatedLand},
+        //  { subLabel: "Rainfed", value: selectedForm.landOwnership?.rainfed},
+        //   { subLabel: "Tankfed", value: selectedForm.landOwnership?.tankfed },
+        //    { subLabel: "Well irrigated", value: selectedForm.landOwnership?.wellIrrigated },
         { label: "26. Patta Number", value: selectedForm.landOwnership?.pattaNumber },
         { label: "27. Total Area (ha)", value: selectedForm.landOwnership?.totalArea },
         { label: "27-28. Taluk", value: selectedForm.landOwnership?.taluk },
         { label: "27-28. Firka", value: selectedForm.landOwnership?.firka},
         { label: "28. Revenue Village", value: selectedForm.landOwnership?.revenueVillage },
         { label: "29. Crop Season", value: selectedForm.landOwnership?.cropSeasonCombined },
-        { label: "30. LiveStocks (goat , Sheep , Milch Animals ,  Draught Animals , Poultry , Others)", value: selectedForm.landOwnership?.livestock},
-        // { label: " Goat", value: selectedForm.landOwnership?.livestock?.goat || "0" },
-        // { label: "    Sheep", value: selectedForm.landOwnership?.livestock?.sheep || "0" },
-        // { label: "    Milch Animals :", value: selectedForm.landOwnership?.livestock?.milchAnimals || "0" },
-        // { label: "    Draught Animals :", value: selectedForm.landOwnership?.livestock?.draught_animals || "0" },
-        // { label: "    Poultry :", value: selectedForm.landOwnership?.livestock?.poultry || "0" },
-        // { label: "    Others :", value: selectedForm.landOwnership?.livestock?.others || "0" },
+        { label: "30. LiveStocks",value : selectedForm.landOwnership?.livestock},
+        // { subLabel: " Goat", value: selectedForm.landOwnership?.livestock?.goat || "0" },
+        // { subLabel: " Sheep", value: selectedForm.landOwnership?.livestock?.sheep || "0" },
+        // { subLabel: " Milch Animals :", value: selectedForm.landOwnership?.livestock?.milchAnimals || "0" },
+        // { subLabel: " Draught Animals :", value: selectedForm.landOwnership?.livestock?.draught_animals || "0" },
+        // { subLabel: " Poultry :", value: selectedForm.landOwnership?.livestock?.poultry || "0" },
+        // { subLabel: " Others :", value: selectedForm.landOwnership?.livestock?.others || "0" },
          ], "/prefd/landOwnership")}
 
       {renderSection("Land Development Details", [
         { label: "31. S.F. No.", value: selectedForm.landDevelopment?.sfNumber },
-        { label: "31.a) Latitude", value: selectedForm.landDevelopment?.latitude },
-        { label: "      Longitude", value: selectedForm.landDevelopment?.longitude },
+        { label: "31.a) Latitude & Longitude"},
+        { subLabel: "Latitude", value: selectedForm.landDevelopment?.latitude },
+        { subLabel: "Longitude", value: selectedForm.landDevelopment?.longitude },
         { label: "32. Soil Type", value: selectedForm.landDevelopment?.soilTypeCombined },
         { label: "33. Land to benefit (ha)", value: selectedForm.landDevelopment?.landBenefit },
         { label: "36. Date of Inspection", value: selectedForm.landDevelopment?.date},
@@ -309,14 +367,12 @@ const handleSubmit = async () => {
       ], "/prefd/bankDetails")}
 
 {!isSubmittedPreview && (
-  <>
-    
-    <Button
-      mode="outlined"
+  <View style={styles.submitContainer}>
+    {/* Save Draft Button */}
+    <TouchableOpacity
+      style={styles.draftBtn}
       onPress={async () => {
         try {
-          
-          // setData("fundStatus",data.bankDetails?.fundStatus)
           await new Promise((res) => setTimeout(res, 50));
           useDraftStore.getState().saveDraft(data);
           Alert.alert("Saved", "Form saved as draft successfully!");
@@ -325,95 +381,257 @@ const handleSubmit = async () => {
           Alert.alert("Error", "Failed to save draft. Please try again.");
         }
       }}
-      style={{ marginTop: 10 }}
-      >
-      Save as Draft
-    </Button>
-</> 
- ) 
-} 
-    <Button
+    >
+      <Ionicons name="save-outline" size={width * 0.06} color="#fff" />
+      <Text style={styles.draftText}>Save Draft</Text>
+    </TouchableOpacity>
+
+    {/* Submit Button */}
+    <TouchableOpacity
+      style={styles.submitButton}
+      onPress={() => {
+        handleSubmit();
+      }}
+    >
+      <Ionicons name="checkmark-circle-outline" size={width * 0.06} color="#fff" />
+      <Text style={styles.submitText}>Submit</Text>
+    </TouchableOpacity>
+  </View>
+)}
+  {/* <Button
       mode="contained"
       onPress={handleSubmit}
       style={[styles.submitButton, { marginTop: 10 }]}
 >
       Submit
-    </Button>
-
+    </Button> */}
 
     </ScrollView>
   );
 }
-
-
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-    paddingTop: 50,
+    backgroundColor: '#F1F7ED',
+    // flex: 1,
   },
-  farmerPhoto: {
-    width: 170,
-    height: 180,
-    position: "absolute",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    zIndex: 2,
-  },
-  farmerPhotoContainer: {
-    position: "absolute",
-    top: 80,
-    right: 30,
-    width: 170,
-    height: 180,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    backgroundColor: "#f2f2f2",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 2,
-  },
-  
-  noPhotoText: {
-    fontSize: 12,
-    color: "#888",
-    textAlign: "center",
-    paddingHorizontal: 8,
-  },
+
+noPhotoText: {
+  fontSize: 12,
+  color: '#999',
+  textAlign: 'center',
+  paddingHorizontal: 5,
+},
+
   title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    textAlign: "center",
+     fontSize: width * 0.06, // 6% of screen width
+    fontWeight: 'bold',
+    color: '#0B8B42',
+    marginBottom: height * 0.02, // 2% of screen height
+    textAlign: 'left',
+    letterSpacing: 1,
   },
   card: {
-    marginBottom: 20,
+    margin: width * 0.05, // 5% of screen width
+    backgroundColor: '#E8F5E9',
+    borderRadius: 16,
+    padding: width * 0.06, // 6% of screen width
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 4,
   },
   fieldContainer: {
     marginBottom: 10,
-  },
-  label: {
-    fontWeight: "bold",
-  },
-  value: {
-    marginLeft: 10,
   },
   divider: {
     marginVertical: 5,
   },
   submitButton: {
-    marginTop: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0B8B42',
+    paddingVertical: height * 0.015,
+    paddingHorizontal: width * 0.08,
+    borderRadius: 30,
   },
   backButton: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    zIndex: 1,
+  marginRight: width * 0.025,        // ~2.5% of screen width
+
+  },
+
+imageContainer: {
+  position: 'absolute',
+  top: height * 0.13,
+  right: width * 0.09,
+  width: width * 0.3,        // Same as image width
+  height: width * 0.3,       // Same as image height
+  borderWidth: 2,
+  borderColor: '#4CAF50',
+  borderRadius: width * 0.02,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: '#fff',   // Optional: to show a white frame
+  zIndex: 10,
+},
+
+ photo: {
+    width: width * 0.3,     // 30% of screen width
+    height: width * 0.3,
+    borderRadius: width * 0.02,
+    borderWidth: 2,
+    borderColor: '#4CAF50',
+  },
+  photoLabel: {
+    marginTop: height * 0.02,
+    fontSize: width * 0.04,
+    color: '#388E3C',
+    fontWeight: '600',
+  },
+  pageTitle: {
+    fontSize: width * 0.06, // 6% of screen width
+    fontWeight: 'bold',
+    color: '#0B8B42',
+    marginBottom: height * 0.02, // 2% of screen height
+    textAlign: 'left',
+    letterSpacing: 1,
+  },
+  sectionTitle: {
+    fontSize: width * 0.05, // 5% of screen width
+    fontWeight: '800',
+    color: '#4CAF50',
+    marginBottom: height * 0.03, // 3% of screen height
+    textAlign: 'left',
+  },
+  item: {
+    marginBottom: height * 0.02, // 2% of screen height
+    borderBottomWidth: 1,
+    borderBottomColor: '#C8E6C9',
+    paddingBottom: height * 0.01, // 1% of screen height
+  },
+  label: {
+    color: '#0B8B42',
+    fontSize: width * 0.04, // 4% of screen width
+    fontWeight: '700',
+  },
+  subLabel: {
+    color: '#388E3C',
+    fontSize: width * 0.035, // 3.5% of screen width
+    fontWeight: '800',
+    marginTop: height * 0.01, // 1% of screen height
+  },
+  value: {
+    fontSize: width * 0.04, // 4% of screen width
+    color: '#444',
+    marginTop: height * 0.01, // 1% of screen height
+    fontWeight: '500',
+  },
+  editButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: height * 0.05, // 5% of screen height
+  },
+  heading_land: {
+    fontSize: width * 0.055, // 5.5% of screen width
+    fontWeight: 'bold',
+    color: '#0B8B42',
+    marginBottom: height * 0.02, // 2% of screen height
+    marginTop: height * 0.03, // 3% of screen height
+    textAlign: 'center',
+  },
+  editBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: height * 0.02, // 2% of screen height
+    paddingHorizontal: width * 0.04, // 4% of screen width
+    backgroundColor: '#DFF5E3',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#134e13',
+  },
+  editText: {
+    marginLeft: width * 0.02, // 2% of screen width
+    color: '#134e13',
+    fontWeight: '600',
+    fontSize: width * 0.04, // 4% of screen width
   },
   fileRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#C8E6C9',
+    borderRadius: 10,
+    paddingVertical: height * 0.02, // 2% of screen height
+    paddingHorizontal: width * 0.04, // 4% of screen width
+    marginTop: height * 0.02, // 2% of screen height
+    backgroundColor: '#F1F8E9',
   },
+  fileLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  fileName: {
+    marginLeft: width * 0.02, // 2% of screen width
+    fontSize: width * 0.04, // 4% of screen width
+    color: '#2E7D32',
+    fontWeight: '600',
+  },
+  fileRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusText: {
+    color: '#4CAF50',
+    fontWeight: '600',
+    fontSize: width * 0.035, // 3.5% of screen width
+  },
+  submitContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    marginBottom: height * 0.05,
+    marginHorizontal: width * 0.05,
+  },
+  submitBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0B8B42',
+    paddingVertical: height * 0.015,
+    paddingHorizontal: width * 0.08,
+    borderRadius: 30,
+  },
+  submitText: {
+    color: '#fff',
+    fontSize: scaleFont(16),
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  draftBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFA500',
+    paddingVertical: height * 0.015,
+    paddingHorizontal: width * 0.08,
+    borderRadius: 30,
+  },
+ 
+draftText: {
+  color: '#fff',
+  fontSize: scaleFont(16),
+  fontWeight: 'bold',
+  marginLeft: 8,
+},
+headerContainer: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingVertical: height * 0.0,    // ~1.5% of screen height
+  paddingHorizontal: width * 0.04,   // ~4% of screen width
+},
+
+backArrow: {
+  marginRight: width * 0.025,        // ~2.5% of screen width
+  paddingTop: height * 0.01,         // ~1% of screen height
+},
+
 });

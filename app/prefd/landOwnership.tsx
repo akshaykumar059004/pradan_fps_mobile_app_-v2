@@ -1,20 +1,22 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TextInput } from "react-native";
-import { Button, Checkbox, IconButton, RadioButton } from "react-native-paper";
+import { useEffect, useState } from "react";
+import { Dimensions, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import * as Animatable from 'react-native-animatable';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { Checkbox, IconButton, RadioButton } from "react-native-paper";
 import { useFormStore } from "../../storage/useFormStore";
-
+ const { width, height } = Dimensions.get('window');
 export default function LandOwnership() {
   const router = useRouter();
  const { id, fromPreview,returnTo,fromsubmit,returnsubmit,fromland,fromplantation,frompond } = useLocalSearchParams<{ id?: string; fromPreview?: string }>();
    const { data, submittedForms, setData } = useFormStore();
- 
+
   const [form, setForm] = useState(
     data.landOwnership || {
       landOwnershipType: "",//cd
       hasWell: "",//cd
       areaIrrigated: "",//cd
-      irrigatedLand: {//no
+      irrigatedLand:{//no
         rainfed: "",//no
         tankfed: "",//no
         wellIrrigated: "",//no
@@ -40,7 +42,14 @@ export default function LandOwnership() {
     }
   );
       useEffect(() => {
-        calculateTotalArea(data.landOwnership.irrigatedLand.rainfed, data.landOwnership.irrigatedLand.tankfed,data.landOwnership.irrigatedLand.wellIrrigated);
+          if (data.landOwnership && data.landOwnership.irrigatedLand) {
+    calculateTotalArea(
+      data.landOwnership.irrigatedLand.rainfed,
+      data.landOwnership.irrigatedLand.tankfed,
+      data.landOwnership.irrigatedLand.wellIrrigated
+    );
+  }
+        // calculateTotalArea(data.landOwnership.irrigatedLand.rainfed, data.landOwnership.irrigatedLand.tankfed,data.landOwnership.irrigatedLand.wellIrrigated);
         if (id && fromPreview === "true") {
           // Load the form by ID and update current working data
           const selected = submittedForms.find((form) => form.id === id);
@@ -70,10 +79,9 @@ export default function LandOwnership() {
     }));
   };
 const calculateTotalArea = (rainfed, tankfed, well) => {
-  const r = parseFloat(rainfed) || 0;
-  const t = parseFloat(tankfed) || 0;
-  const w = parseFloat(well) || 0;
-
+ const r = parseFloat(rainfed ?? "0");
+  const t = parseFloat(tankfed ?? "0");
+  const w = parseFloat(well ?? "0");
   const total = (r + t + w).toFixed(2); // Rounded to 2 decimal places
   updateField("totalArea", total.toString());
 };
@@ -135,20 +143,24 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <IconButton icon="arrow-left" size={24} onPress={() => router.back()} />
+    <KeyboardAwareScrollView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.inner}>
+      <Animatable.View animation="fadeInUp" duration={600}>
 
-      <Text style={styles.title}>
+
+      <Text style={styles.heading_land}>
   {fromland === "true"
-    ? "Land Form"
+    ? "LAND REDEVELOPMENT FORM"
     : frompond === "true"
-    ? "Pond Form"
+    ? "POND REDEVELOPMENT FORM"
     : fromplantation === "true"
-    ? "Plantation Form"
+    ? "PLANTATION REDEVELOPMENT FORM"
     : "Form"}
 </Text>
-      <Text style={styles.subtitle}>Land Ownership & Livestock</Text>
-
+<View style={styles.headingContainer}>
+      <IconButton icon="arrow-left" size={width * .06} onPress={() => router.back()} />
+      <Text style={styles.heading}>Land Ownership & Livestock</Text>
+</View>
       <Text style={styles.question}>23. Land Ownership:</Text>
 <RadioButton.Group
   onValueChange={(value) => updateField("landOwnershipType", value)}
@@ -181,75 +193,107 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
         </>
       )}
 
-       <Text style={styles.question}>24 1/2. Patta Number:</Text>
+       <Text style={styles.label}>24. Patta Number</Text>
       <TextInput
+        placeholder="Enter patta number"
+        placeholderTextColor="#888"
         value={form.pattaNumber}
         onChangeText={(text) => updateField("pattaNumber", text)}
         style={styles.input}
       />
 
-<Text style={styles.question}>25. Irrigated Lands (ha):</Text>
-<Text>Rainfed:</Text>
+<Text style={styles.label}>27. Irrigated Lands (ha)</Text>
+<View style={styles.row}>
+  <View style={styles.inputHalfWrapper}>
+<Text style={styles.subLabel}>Rainfed:</Text>
 <TextInput
+placeholder="0"
+placeholderTextColor="#888"
   value={String(form.irrigatedLand.rainfed)}
   onChangeText={(text) => {
     updateNestedField("irrigatedLand", "rainfed", text);
-    calculateTotalArea(text, form.irrigatedLand.tankfed, form.irrigatedLand.wellIrrigated);
+     calculateTotalArea(text, form.irrigatedLand.tankfed, form.irrigatedLand.wellIrrigated);
+    const Irrigatedcombined = `${form.irrigatedLand.rainfed},${form.irrigatedLand.tankfed},${form.irrigatedLand.wellIrrigated}`
+    updateField("irrigatedLandCombined",Irrigatedcombined);
+   
   }}
   style={styles.input}
   keyboardType="numeric"
 />
-
-<Text>Tankfed:</Text>
+</View>
+<View style={styles.inputHalfWrapper}>
+<Text style={styles.subLabel}>Tankfed:</Text>
 <TextInput
+placeholderTextColor="#888"
+placeholder="0"
   value={String(form.irrigatedLand.tankfed)}
   onChangeText={(text) => {
     updateNestedField("irrigatedLand", "tankfed", text);
-    
+     calculateTotalArea( form.irrigatedLand.rainfed, text,form.irrigatedLand.wellIrrigated);
+         const Irrigatedcombined = `${form.irrigatedLand.rainfed},${form.irrigatedLand.tankfed},${form.irrigatedLand.wellIrrigated}`
   }}
   style={styles.input}
   keyboardType="numeric"
 />
-
-<Text>Well Irrigated:</Text>
+</View>
+<View style={styles.inputHalfWrapper}>
+<Text style={styles.subLabel}>Well Irrigated:</Text>
 <TextInput
+placeholder="0"
+placeholderTextColor="#888"
   onChangeText={(text) => {
     updateNestedField("irrigatedLand", "wellIrrigated", text);
+    calculateTotalArea( form.irrigatedLand.rainfed, form.irrigatedLand.tankfed,text,);
+        const Irrigatedcombined = `${form.irrigatedLand.rainfed},${form.irrigatedLand.tankfed},${form.irrigatedLand.wellIrrigated}`
+    updateField("irrigatedLandCombined",Irrigatedcombined);
   }}
    value={String(form.irrigatedLand.wellIrrigated)}
   style={styles.input}
   keyboardType="numeric"
 />
-
+</View>
+</View>
 
     
-
-      <Text style={styles.question}>27. Total Irrigated lands (ha):</Text>
+ <Text style={styles.label}>29. Total Area (ha)</Text>
 <TextInput
   value={form.totalArea}
   editable={false}
+   placeholder="Enter total area"
+  placeholderTextColor="#888"
   style={styles.input}
   keyboardType="numeric"
 />
-      <Text style={styles.question}>27-28. Taluk:</Text>
+     <Text style={styles.label}>30. Taluk</Text>
+      <View style={{ zIndex: 1000, marginBottom: 10 }}>
       <TextInput
         value={form.taluk}
+          placeholder="Enter Taluk"
+              placeholderTextColor="#888"
         onChangeText={(text) => updateField("taluk", text)}
         style={styles.input}
       />
-<Text style={styles.question}>27-28. Firka:</Text>
+      </View>
+      <Text style={styles.label}>31. Firka</Text>
+                <View style={{ zIndex: 1000, marginBottom: 10 }}>
       <TextInput
         value={form.firka}
+        placeholder="Enter Firka"
+              placeholderTextColor="#888"
         onChangeText={(text) => updateField("firka", text)}
         style={styles.input}
       />
-
-      <Text style={styles.question}>28. Revenue Village:</Text>
+</View>
+    <Text style={styles.label}>32. Revenue Village</Text>
+              <View style={{ zIndex: 1000, marginBottom: 10 }}>
       <TextInput
         value={form.revenueVillage}
+         placeholder="Enter revenue village"
+              placeholderTextColor="#888"
         onChangeText={(text) => updateField("revenueVillage", text)}
         style={styles.input}
       />
+      </View>
 
 <Text style={styles.question}>29. Crop Season (Choose all that apply):</Text>
 {["Kharif", "Rabi", "Other"].map((season) => (
@@ -281,8 +325,10 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
 )}
 
 
- <Text style={styles.question}>30. Livestock at Home:</Text>
-
+  <Text style={styles.label}>34. Livestock at Home</Text>
+<View style={styles.row}>
+  <View style={styles.inputHalfWrapper}>
+      <Text style={styles.subLabel}>Goat</Text>
 <TextInput
   placeholder="Goat"
   value={String(form.livestock.goat)}
@@ -296,7 +342,9 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
   keyboardType="numeric" 
   style={styles.input}
 />
-
+</View>
+ <View style={styles.inputHalfWrapper}>
+    <Text style={styles.subLabel}>Sheep</Text>
 <TextInput
   placeholder="Sheep"
   value={String(form.livestock.sheep)}
@@ -309,7 +357,9 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
   keyboardType="numeric"
   style={styles.input}
 />
-
+</View>
+<View style={styles.inputHalfWrapper}>
+    <Text style={styles.subLabel}>Milch Animals</Text>
 <TextInput
   placeholder="Milch animals"
   value={String(form.livestock.milchAnimals)}
@@ -322,9 +372,14 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
   keyboardType="numeric"
   style={styles.input}
 />
+</View>
+</View>
 
+<View style={styles.row}>
+   <View style={styles.inputHalfWrapper}>
+      <Text style={styles.subLabel}>Draught Animals</Text>
 <TextInput
-  placeholder="Draught Animals"
+  placeholder="Draught"
   value={String(form.livestock.draught_animals)}
   onChangeText={(text) => {updateNestedField("livestock","draught_animals",text)
     const draught_animals= form.livestock.draught_animals ||"0";
@@ -334,7 +389,9 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
   keyboardType="numeric"
   style={styles.input}
 />
-
+</View>
+ <View style={styles.inputHalfWrapper}>
+    <Text style={styles.subLabel}>Poultry</Text>
 <TextInput
   placeholder="Poultry"
   value={String(form.livestock.poultry)}
@@ -346,7 +403,9 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
   keyboardType="numeric"
   style={styles.input}
 />
-
+</View>
+ <View style={styles.inputHalfWrapper}>
+    <Text style={styles.subLabel}>Others</Text>
 <TextInput
   placeholder="Others"
   value={String(form.livestock.others)}
@@ -358,24 +417,169 @@ const calculateTotalArea = (rainfed, tankfed, well) => {
   keyboardType="numeric"
   style={styles.input}
 />
-     <Button mode="contained" onPress={handleNext} style={styles.button}>
+</View>
+</View>
+  <TouchableOpacity
+            style={styles.nextBtn}
+           onPress={() =>handleNext() }>
+            <Text style={styles.nextBtnText}>{fromPreview ? "Preview" : "Next"}</Text>
+          </TouchableOpacity>
+     {/* <Button mode="contained" onPress={handleNext} style={styles.button}>
      {fromPreview ? "Preview" : "Next"}
-     </Button>
+     </Button> */}
+      </Animatable.View>
     </ScrollView>
+    </KeyboardAwareScrollView>
   ); 
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, paddingBottom: 40 },
+  // container: { padding: 20, paddingBottom: 40 },
   title: { fontSize: 24, fontWeight: "bold", textAlign: "center" },
   subtitle: { fontSize: 18, fontWeight: "600", textAlign: "center", marginBottom: 20 },
   question: { fontWeight: "bold", marginTop: 10, marginBottom: 5 },
+  // input: {
+  //   borderWidth: 1,
+  //   borderColor: "#ccc",
+  //   padding: 10,
+  //   marginBottom: 10,
+  //   borderRadius: 5,
+  // },
+  button: { marginTop: 20 },
+   container: {
+    flex: 1,
+    backgroundColor: '#F1F7ED',
+  },
+  inner: {
+    padding: width * 0.05,
+    paddingBottom: height * 0.025,
+  },
+  heading_land: {
+    fontSize: width * 0.055, // ~22 on 400px width
+    fontWeight: 'bold',
+    color: '#0B8B42',
+    marginBottom: height * 0.025,
+    textAlign: 'center',
+  },
+  headingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: height * 0.025,
+  },
+  heading: {
+    fontSize: width * 0.05,
+    fontWeight: 'bold',
+    color: '#0B8B42',
+    marginLeft: width * 0.025,
+  },
+  label: {
+    fontSize: width * 0.035,
+    marginVertical: height * 0.01,
+    color: '#333',
+    fontWeight: '600',
+  },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    marginBottom: 10,
-    borderRadius: 5,
+    borderColor: '#A5D6A7',
+    borderRadius: width * 0.025,
+    paddingHorizontal: width * 0.035,
+    paddingVertical: height * 0.015,
+    backgroundColor: '#E8F5E9',
+    color: '#333',
+    fontSize: width * 0.035,
+    marginBottom: height * 0.015,
   },
-  button: { marginTop: 20 },
+  radioGroup: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: height * 0.01,
+  },
+  radioOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: width * 0.04,
+    marginBottom: height * 0.01,
+  },
+  checkboxGroup: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginBottom: height * 0.015,
+  },
+  checkboxOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginRight: width * 0.04,
+    marginBottom: height * 0.01,
+  },
+  radioText: {
+    marginLeft: width * 0.015,
+    fontSize: width * 0.035,
+    color: '#333',
+  },
+  irrigationRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: height * 0.015,
+  },
+  irrigationInput: {
+    flex: 1,
+    marginRight: width * 0.02,
+  },
+  nextBtn: {
+    backgroundColor: '#134e13',
+    paddingVertical: height * 0.018,
+    borderRadius: width * 0.025,
+    alignItems: 'center',
+    marginTop: height * 0.025,
+    marginBottom: height * 0.025,
+  },
+  nextBtnText: {
+    color: '#fff',
+    fontSize: width * 0.04,
+    fontWeight: '600',
+  },
+  dropdown: {
+    borderColor: '#A5D6A7',
+    backgroundColor: '#E8F5E9',
+    borderRadius: width * 0.025,
+    minHeight: height * 0.06,
+    paddingHorizontal: width * 0.025,
+  },
+  dropdownContainer: {
+    borderColor: '#A5D6A7',
+    backgroundColor: '#F1F7ED',
+    borderRadius: width * 0.025,
+  },
+
+
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: height * 0.015,
+  },
+
+  inputHalfWrapper: {
+    flex: 1,
+    marginHorizontal: width * 0.02,
+  },
+
+  subLabel: {
+    fontSize: width * 0.033,
+    color: '#555',
+    marginBottom: height * 0.005,
+    fontWeight: '500',
+  },
+
+  inputHalf: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#A5D6A7',
+    borderRadius: width * 0.025,
+    paddingHorizontal: width * 0.035,
+    paddingVertical: height * 0.015,
+    backgroundColor: '#E8F5E9',
+    color: '#333',
+    fontSize: width * 0.035,
+    marginRight: width * 0.025,
+  },
 });
